@@ -17,10 +17,6 @@ SSL_CA = os.path.join(
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={
-        "ssl": {
-            "ca": SSL_CA
-        }
     }
 )
 
