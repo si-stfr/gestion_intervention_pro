@@ -1,16 +1,10 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 
+from auth.jwt import decode_token
 from database import get_db
 from models.user import User
-
-# =========================================================
-# CONFIG JWT (doit être IDENTIQUE à auth_service)
-# =========================================================
-SECRET_KEY = "ta_cle_secrete"
-ALGORITHM = "HS256"
 
 security = HTTPBearer(auto_error=False)
 
@@ -31,18 +25,10 @@ def get_current_user(
     
     token = credentials.credentials
 
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    payload = decode_token(token)
+    user_id = payload.get("user_id") if payload else None
 
-        user_id = payload.get("user_id")
-
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token invalide"
-            )
-
-    except JWTError:
+    if user_id is None or payload.get("type") != "access":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token expiré ou invalide"
