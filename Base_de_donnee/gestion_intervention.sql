@@ -59,7 +59,7 @@ CREATE TABLE `interventions` (
   `source_demande` enum('Direct','E-mail','Formcreator','Helpdesk','Other','Phone','Written') NOT NULL,
   `urgence` enum('Très haute','Haute','Moyenne','Basse','Très basse') NOT NULL,
   `impact` enum('Très haut','Haut','Moyen','Bas','Très bas') NOT NULL,
-  `priorite` enum('Majeure','Très Haute','Moyenne','Basse','Très basse') NOT NULL,
+  `priorite` enum('Majeure','Très haute','Moyenne','Basse','Très basse') NOT NULL,
   `type_intervention` enum('Livraison','Installation','Livraison + Installation','Stockage','Prêt de Matériel','Mise à jour','Autre') NOT NULL,
   `type_intervention_autre` varchar(255) DEFAULT NULL,
   `diagnostique_effectue` text DEFAULT NULL,

@@ -636,7 +636,7 @@ export default function IntervenantDashboard() {
               }
             >
               <option>Majeure</option>
-              <option>Très Haute</option>
+              <option>Très haute</option>
               <option>Moyenne</option>
               <option>Basse</option>
               <option>Très basse</option>
