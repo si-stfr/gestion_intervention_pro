@@ -1,0 +1,60 @@
+.topbar {
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* =========================
+   TABLETTE
+========================= */
+@media (max-width: 960px) {
+
+  .card-grid,
+  .intervention-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+
+  h1,
+  h2,
+  h3 {
+    text-align: center;
+  }
+
+  .card-grid,
+  .intervention-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .actions {
+    justify-content: center;
+  }
+
+}
+
+/* =========================
+   PETIT MOBILE
+========================= */
+@media (max-width: 450px) {
+
+  .card-grid,
+  .intervention-list {
+    grid-template-columns: 1fr;
+  }
+
+  .card,
+  .intervention-card {
+    text-align: center;
+  }
+
+}

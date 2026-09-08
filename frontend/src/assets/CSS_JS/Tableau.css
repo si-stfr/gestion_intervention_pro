@@ -1,0 +1,220 @@
+/* CONTENEUR GLOBAL */
+.tableau-container {
+  padding: 20px;
+}
+
+/* TITRE */
+.titre-principal {
+  color: #0074c7;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* FILTRES */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* INPUT RECHERCHE */
+.search-input {
+  padding: 8px;
+  border-radius: 10px;
+  border: 2px solid #0074c7; /* 🔵 bordure bleue */
+  outline: none;
+}
+
+/* SELECT */
+.select-statut {
+  padding: 8px;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  transition: 0.3s;
+}
+
+/* 🎯 Couleur dynamique du select */
+.select-statut.signalé {
+  border-color: #cd2c2e;
+}
+
+.select-statut.encours {
+  border-color: #f1c40f;
+}
+
+.select-statut.abouti {
+  border-color: #81b864;
+}
+
+/* TABLE */
+.table-interventions {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  border: 2px solid black; /* 🖤 bordure globale */
+}
+
+.table-interventions th,
+.table-interventions td {
+  border: 1px solid black;
+  padding: 10px;
+  text-align: left;
+}
+
+/* 🔴🟡🟢 Bordure gauche selon statut */
+.ligne {
+  border-left: 6px solid transparent;
+}
+
+.ligne.signalé {
+  border-left: 6px solid #cd2c2e;
+}
+
+.ligne.encours {
+  border-left: 6px solid #f1c40f;
+}
+
+.ligne.abouti {
+  border-left: 6px solid #81b864;
+}
+
+/* TEXTE STATUT */
+.statut {
+  font-weight: bold;
+}
+
+.statut.signalé {
+  color: #cd2c2e;
+}
+
+.statut.encours {
+  color: #f1c40f;
+}
+
+.statut.abouti {
+  color: #81b864;
+}
+
+/* ===== ADMIN PANEL ===== */
+
+.admin-panel {
+  margin-top: 30px;
+  padding: 25px;
+  border: 2px solid #ddd;
+  border-radius: 18px;
+  background: #fafafa;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.admin-title {
+  color: #cd2c2e;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.admin-grid input,
+.admin-grid select {
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  outline: none;
+}
+
+.admin-grid input:focus,
+.admin-grid select:focus {
+  border-color: #0074c7;
+}
+
+.admin-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #cd2c2e;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.admin-btn:hover {
+  background: #a82123;
+}
+
+.ligne.signalé td:not(.statut),
+.ligne.encours td:not(.statut),
+.ligne.abouti td:not(.statut) {
+  color: black;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+
+  .tableau-container h1,
+  .tableau-container h2 {
+    text-align: center;
+  }
+
+  .filters {
+    justify-content: center;
+  }
+
+}
+
+/* =========================
+   FORMULAIRE ADMIN MOBILE
+========================= */
+@media (max-width: 530px) {
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-panel {
+    padding: 15px;
+  }
+
+}
+
+/* =========================
+   RESPONSIVE TABLEAU
+========================= */
+
+.table-wrapper {
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+
+  .table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .table-interventions {
+    min-width: 1100px;
+  }
+
+}

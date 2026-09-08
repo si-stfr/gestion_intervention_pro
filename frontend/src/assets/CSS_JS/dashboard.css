@@ -1,0 +1,258 @@
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --border: #334155;
+  --text: #000000;
+  --muted: #94a3b8;
+
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --yellow: #facc15;
+  --green: #22c55e;
+}
+
+/* =========================
+   TITRES
+========================= */
+h2 {
+  color: var(--blue);
+  margin-bottom: 20px;
+}
+
+h3 {
+  color: var(--text);
+}
+
+/* =========================
+   GRID CARDS
+========================= */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* =========================
+   CARD BASE
+========================= */
+.card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  color: var(--text);
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* =========================
+   STATUT COLORS (BORDERS)
+========================= */
+.card.signalé {
+  border-color: var(--red);
+}
+
+.card.encours {
+  border-color: var(--yellow);
+}
+
+.card.abouti {
+  border-color: var(--green);
+}
+
+/* =========================
+   TEXTE DANS CARDS
+========================= */
+
+.card h3 {
+  text-align: center;
+}
+
+.card p {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 10px;
+  text-align: center;
+}
+
+body {
+  background: #0f172a;
+  color: #ef4444;
+}
+
+/* =========================
+   LOGOUT BUTTON
+========================= */
+.logout-btn {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 20px;
+  border: 2px solid var(--red);
+  background: transparent;
+  color: var(--red);
+  cursor: pointer;
+  transition: 0.2s;
+  width: 100%;
+}
+
+.logout-btn:hover {
+  background: var(--red);
+  color: white;
+}
+
+/* ===== STATS COLORS ===== */
+.signalé {
+  border: 2px solid red;
+}
+
+.encours {
+  border: 2px solid orange;
+}
+
+.abouti {
+  border: 2px solid green;
+}
+
+/* ===== INTERVENTIONS ===== */
+.intervention-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.intervention-card {
+  background: var(--card);
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.actions button {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+
+/* ===== FORM ADMIN ===== */
+.form-admin {
+  margin-top: 25px;
+  display: grid;
+  gap: 12px;
+  max-width: 450px;
+  padding: 20px;
+  border-radius: 15px;
+  background: var(--card);
+  border: 2px solid var(--border);
+}
+
+/* INPUTS */
+.form-admin input,
+.form-admin select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  outline: none;
+  transition: 0.2s;
+}
+
+/* FOCUS */
+.form-admin input:focus,
+.form-admin select:focus {
+  border-color: var(--blue);
+  transform: scale(1.02);
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 5px;
+  color: var(--text);
+}
+
+/* petit groupe date */
+.date-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-admin button {
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+/* bouton AJOUT */
+.form-admin button {
+  background: var(--blue);
+  color: white;
+}
+
+.form-admin button:hover {
+  opacity: 0.85;
+  transform: scale(1.03);
+}
+
+/* =========================
+   TABLETTE
+========================= */
+@media (max-width: 960px) {
+
+  .card-grid,
+  .intervention-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 768px) {
+
+  h1,
+  h2,
+  h3 {
+    text-align: center;
+  }
+
+  .card-grid,
+  .intervention-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .actions {
+    justify-content: center;
+  }
+
+}
+
+/* =========================
+   PETIT MOBILE
+========================= */
+@media (max-width: 450px) {
+
+  .card-grid,
+  .intervention-list {
+    grid-template-columns: 1fr;
+  }
+
+  .card,
+  .intervention-card {
+    text-align: center;
+  }
+
+}

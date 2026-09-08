@@ -1,0 +1,90 @@
+/* PAGE CENTRÉE */
+.login-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f7fa;
+}
+
+/* FORMULAIRE */
+.login-form {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 320px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* TITRE */
+.login-title {
+  text-align: center;
+  color: #0074c7;
+  margin-bottom: 20px;
+}
+
+/* LABELS */
+.form-label {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* COULEURS PAR SECTION */
+.label-user {
+  color: #0074c7;
+}
+
+.label-profil {
+  color: #cd2c2e;
+}
+
+.label-validation {
+  color: #81b864; /* ✅ vert demandé */
+}
+
+/* INPUTS */
+.form-input,
+.form-select {
+  margin-top: 5px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  outline: none;
+  transition: 0.2s;
+}
+
+/* COULEUR BORDURE SELON TYPE */
+.input-user {
+  border-color: #0074c7;
+}
+
+.select-profil {
+  border-color: #cd2c2e;
+}
+
+/* FOCUS */
+.form-input:focus,
+.form-select:focus {
+  transform: scale(1.02);
+}
+
+/* BOUTON */
+.form-button {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 15px;
+  border: none;
+  background-color: #81b864;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* HOVER */
+.form-button:hover {
+  background-color: #6ea653;
+  transform: scale(1.03);
+}
