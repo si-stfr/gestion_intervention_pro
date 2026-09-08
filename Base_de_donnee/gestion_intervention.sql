@@ -1,15 +1,17 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
+-- Script MySQL Workbench / Aiven
+-- Sélectionner la base cible Aiven dans Workbench avant l'exécution.
+-- L'import recrée les tables et remplace les données existantes.
 --
 -- Hôte : 127.0.0.1
 -- Généré le : mar. 08 sep. 2026 à 13:54
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET NAMES utf8mb4;
+SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';
 START TRANSACTION;
-SET time_zone = "+00:00";
+SET time_zone = '+00:00';
+SET FOREIGN_KEY_CHECKS = 0;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -21,6 +23,15 @@ SET time_zone = "+00:00";
 -- Base de données : `gestion_intervention`
 --
 
+USE `gestion_intervention`;
+
+DROP TABLE IF EXISTS `intervention_materiel`;
+DROP TABLE IF EXISTS `actions_realisees`;
+DROP TABLE IF EXISTS `refresh_tokens`;
+DROP TABLE IF EXISTS `interventions`;
+DROP TABLE IF EXISTS `materiels`;
+DROP TABLE IF EXISTS `users`;
+
 -- --------------------------------------------------------
 
 --
@@ -31,7 +42,8 @@ CREATE TABLE `actions_realisees` (
   `id` int(11) NOT NULL,
   `intervention_id` int(11) NOT NULL,
   `action_nom` enum('Nettoyage_systeme','Suppression_virus_ou_malware','Installation_logiciel','Reinstallation_systeme','Remplacement_materiel','Configuration_reseau','Sauvegarde_ou_Restauration','Mise_a_jour_systeme','Autre') NOT NULL,
-  `action_autre` varchar(255) DEFAULT NULL
+  `action_autre` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -45,10 +57,10 @@ CREATE TABLE `interventions` (
   `titre` varchar(255) NOT NULL,
   `description_de_la_panne` text NOT NULL,
   `source_demande` enum('Direct','E-mail','Formcreator','Helpdesk','Other','Phone','Written') NOT NULL,
-  `urgence` enum('Très haute','Haute','Basse','Très basse') NOT NULL,
+  `urgence` enum('Très haute','Haute','Moyenne','Basse','Très basse') NOT NULL,
   `impact` enum('Très haut','Haut','Moyen','Bas','Très bas') NOT NULL,
   `priorite` enum('Majeure','Très Haute','Moyenne','Basse','Très basse') NOT NULL,
-  `type_intervention` enum('Livraison','Installation','Livraison + Installation','Stockage','Prêt de Matériel') NOT NULL,
+  `type_intervention` enum('Livraison','Installation','Livraison + Installation','Stockage','Prêt de Matériel','Mise à jour','Autre') NOT NULL,
   `type_intervention_autre` varchar(255) DEFAULT NULL,
   `diagnostique_effectue` text DEFAULT NULL,
   `resultat_intervention` enum('Problème résolu','Nouvelle intervention nécessaire') DEFAULT NULL,
@@ -65,7 +77,8 @@ CREATE TABLE `interventions` (
   `actions_autre` varchar(255) DEFAULT NULL,
   `manager_id` int(11) DEFAULT NULL,
   `date_verification` date DEFAULT NULL,
-  `lock_statut` tinyint(1) DEFAULT 0
+  `lock_statut` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -86,7 +99,8 @@ INSERT INTO `interventions` (`id`, `titre`, `description_de_la_panne`, `source_d
 CREATE TABLE `intervention_materiel` (
   `intervention_id` int(11) NOT NULL,
   `materiel_id` int(11) NOT NULL,
-  `quantite` int(11) NOT NULL
+  `quantite` int(11) NOT NULL,
+  PRIMARY KEY (`intervention_id`, `materiel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -111,7 +125,8 @@ CREATE TABLE `materiels` (
   `utilisateur_concerne_id` int(11) NOT NULL,
   `lieu_stockage` varchar(255) DEFAULT NULL,
   `statut` varchar(255) DEFAULT NULL,
-  `quantite` int(11) DEFAULT 1
+  `quantite` int(11) DEFAULT 1,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -131,7 +146,8 @@ CREATE TABLE `refresh_tokens` (
   `id` int(11) NOT NULL,
   `token` varchar(500) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `expires_at` datetime NOT NULL
+  `expires_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -226,7 +242,8 @@ CREATE TABLE `users` (
   `telephone` varchar(20) NOT NULL,
   `profil` enum('ADMIN','TECHNICIEN','INTERVENANT','MANAGER') NOT NULL DEFAULT 'INTERVENANT',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `hashed_password` varchar(255) NOT NULL
+  `hashed_password` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -248,14 +265,12 @@ INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_
 -- Index pour la table `actions_realisees`
 --
 ALTER TABLE `actions_realisees`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `intervention_id` (`intervention_id`);
 
 --
 -- Index pour la table `interventions`
 --
 ALTER TABLE `interventions`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `demandeur_id` (`demandeur_id`),
   ADD KEY `technicien_id` (`technicien_id`),
   ADD KEY `fk_intervention_manager` (`manager_id`);
@@ -264,14 +279,12 @@ ALTER TABLE `interventions`
 -- Index pour la table `intervention_materiel`
 --
 ALTER TABLE `intervention_materiel`
-  ADD PRIMARY KEY (`intervention_id`,`materiel_id`),
   ADD KEY `materiel_id` (`materiel_id`);
 
 --
 -- Index pour la table `materiels`
 --
 ALTER TABLE `materiels`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `intervention_id` (`intervention_id`),
   ADD KEY `utilisateur_concerne_id` (`utilisateur_concerne_id`);
 
@@ -279,7 +292,6 @@ ALTER TABLE `materiels`
 -- Index pour la table `refresh_tokens`
 --
 ALTER TABLE `refresh_tokens`
-  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `token` (`token`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `ix_refresh_tokens_id` (`id`);
@@ -288,7 +300,6 @@ ALTER TABLE `refresh_tokens`
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
   ADD UNIQUE KEY `email` (`email`);
 
@@ -334,7 +345,6 @@ ALTER TABLE `users`
 -- Contraintes pour la table `actions_realisees`
 --
 ALTER TABLE `actions_realisees`
-  ADD CONSTRAINT `actions_realisees_ibfk_1` FOREIGN KEY (`intervention_id`) REFERENCES `interventions` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_actions_intervention` FOREIGN KEY (`intervention_id`) REFERENCES `interventions` (`id`) ON DELETE CASCADE;
 
 --
@@ -364,6 +374,7 @@ ALTER TABLE `materiels`
 --
 ALTER TABLE `refresh_tokens`
   ADD CONSTRAINT `refresh_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

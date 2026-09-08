@@ -75,7 +75,7 @@ export default function Interventions() {
 
     lieu: "",
 
-    urgence: "Moyenne",
+    urgence: "Haute",
     technicien_id: ""
   });
 
