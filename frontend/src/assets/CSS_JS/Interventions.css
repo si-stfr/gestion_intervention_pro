@@ -43,16 +43,22 @@
 }
 
 .commentaire-manager {
-    width: 100%;
-    min-height: 35px;   /* ↓ réduit la hauteur */
-    max-height: 60px;   /* évite que ça devienne énorme */
-    resize: vertical;   /* l’utilisateur peut agrandir s’il veut */
-    padding: 6px 8px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    box-sizing: border-box;
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 220px;
+  min-height: 70px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  line-height: 1.2;
+  box-sizing: border-box;
+  pointer-events: auto;
+  cursor: text;
 }
 
 /* FILTRES */
