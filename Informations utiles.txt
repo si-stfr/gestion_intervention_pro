@@ -1,0 +1,27 @@
+Les différents Compte :
+Nom utilisateur : Mot de passe : rôle
+Lesi : Mrlesi : admin
+Admin : admin
+Manager : manager
+Tidgy : Leflemmard : technicien
+Lory : Lehero : intervenant
+Axel : Feu : intervenant
+Mark : Legardien : manager
+
+Site pour hébergement :
+Frontend : Vercel
+Backend : Render
+Base de donnée : Aiven (modifiable via MysqlWorkbench) (adresse email : informatique@ville-saintfrancois.fr nom : sistfr)
+
+Fonctionnement des interventions :
+
+Intervanant/Admin : Crée une intervention (Avec le statut "Signalé", "En cours" ou "En retard" automatiquement selon la date de début et de fin) 
+
+Technicien : Complète l'intervention qui lui a été assigné (Et lui attribut le statut "En attente validation")
+
+Manager : Valide l'intervention que le technicien lui aura assigné (Et lui attribut le statut final "Abouti" ou "Impossible".
+
+Une intervention avec le statut "Impossible" à la possibilité d'être renouveler par l'admin et l'intervenant sur la page des interventions impossibles
+
+
+'Livraison','Installation','Livraison + Installation','Stockage','Prêt de Matériel'

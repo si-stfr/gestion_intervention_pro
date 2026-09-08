@@ -1,0 +1,114 @@
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow-y:auto;
+  overflow-x: hidden;
+  transition: all 0.3s ease;
+} 
+
+
+.sidebar-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 180px;
+}
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.sidebar-logo {
+  width: 360px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 15px;
+  margin-left : -80px;
+}
+
+/* BASE LINK */
+.sidebar a {
+  padding: 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* COULEURS DEMANDÉES */
+.sidebar .sidebar-content .link-admin {
+  color: red !important;
+}
+
+.sidebar .sidebar-content .link-vue {
+  color: rgba(168, 109, 82, 0.986) !important;
+}
+
+.sidebar .sidebar-content .link-interventions {
+  color: orange !important;
+}
+
+.sidebar .sidebar-content .link-users {
+  color: gold !important;
+}
+
+.sidebar .sidebar-content .link-green {
+  color: green !important;
+}
+
+.sidebar .sidebar-content .link-purple {
+  color: purple !important;
+}
+
+.sidebar .sidebar-content .link-gray {
+  color: gray !important;
+}
+
+.sidebar .sidebar-content .link-materiel {
+  color: blue !important;
+}
+/* HOVER */
+.sidebar a:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* LOGOUT */
+.logout-btn {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid red;
+  background: transparent;
+  color: red;
+}
+
+.logout-btn:hover {
+  background: red;
+  color: white;
+}
+
+.sidebar.open {
+  width: 250px;
+}
+
+.sidebar.closed {
+  width: 0;
+  transform: translateX(-100%);
+  overflow: hidden;
+}
+
+.sidebar-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  padding: 8px 12px;
+}
