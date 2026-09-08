@@ -535,6 +535,7 @@ export default function Interventions() {
               </select>
 
               {/* 3. TITRE */}
+              <label>Titre</label>
               <input
                 placeholder="Titre"
                 value={form.titre}
@@ -547,6 +548,7 @@ export default function Interventions() {
               />
 
               {/* 4. DESCRIPTION */}
+              <label>Description</label>
               <textarea
                 placeholder="Description"
                 value={form.description_de_la_panne}
