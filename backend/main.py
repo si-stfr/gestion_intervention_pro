@@ -61,7 +61,11 @@ app = FastAPI(
 # ]
 load_dotenv()
 
-origins = os.getenv("ALLOWED_ORIGINS").split(",")
+origins = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+    if origin.strip()
+]
 
 
 app.add_middleware(
