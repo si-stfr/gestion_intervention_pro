@@ -61,11 +61,17 @@ app = FastAPI(
 # ]
 load_dotenv()
 
-origins = [
-    origin.strip()
-    for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
-    if origin.strip()
-]
+configured_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://gestion-intervention-pro-ruddy.vercel.app,http://localhost:5173",
+)
+origins = []
+for origin in configured_origins.split(","):
+    origin = origin.strip().rstrip("/")
+    if origin and not origin.startswith(("http://", "https://")):
+        origin = f"https://{origin}"
+    if origin:
+        origins.append(origin)
 
 
 app.add_middleware(
