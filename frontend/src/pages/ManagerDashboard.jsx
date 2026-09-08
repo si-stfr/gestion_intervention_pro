@@ -145,7 +145,9 @@ export default function ManagerDashboard() {
                                     <th>Date de fin</th>
                                     <th>Lieu</th>
                                     <th>Technicien</th>
+                                    <th>Diagnostique effectué</th>
                                     <th>Actions réalisées</th>
+                                    <th>Actions autre</th>
                                     <th>Résultat d'intervention</th>
                                     <th>Commentaire</th>
                                     <th>Manager</th>
