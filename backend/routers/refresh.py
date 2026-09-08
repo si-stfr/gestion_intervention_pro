@@ -1,29 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-import jwt
+from datetime import datetime
 
 from database import get_db
+from auth.jwt import create_access_token
 from models.refresh_token import RefreshToken
 from models.user import User
 
 router = APIRouter(prefix="/refresh", tags=["Refresh Token"])
-
-# 🔐 Clé secrète (idéalement à mettre dans .env)
-SECRET_KEY = "ta_cle_secrete"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-
-# 🔹 Générer un nouveau access token
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
 
 # 🔹 Rafraîchir le token
 @router.post("/")
