@@ -73,6 +73,10 @@ for origin in configured_origins.split(","):
     if origin:
         origins.append(origin)
 
+production_frontend_origin = "https://gestion-intervention-pro-ruddy.vercel.app"
+if production_frontend_origin not in origins:
+    origins.append(production_frontend_origin)
+
 
 app.add_middleware(
     CORSMiddleware,
