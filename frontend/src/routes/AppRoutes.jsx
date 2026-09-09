@@ -21,6 +21,7 @@ import Interventions from "../pages/Interventions";
 
 import InterventionsAbouties from "../pages/InterventionsAbouties";
 import InterventionsImpossible from "../pages/InterventionsImpossible";
+import InterventionsImprimer from "../pages/InterventionsImprimer";
 
 import MaterielsPage from "../pages/Materiels";
 
@@ -174,6 +175,19 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <InterventionsAbouties />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =====================================================
+            IMPRIMER
+        ===================================================== */}
+
+        <Route
+          path="/interventions/imprimer"
+          element={
+            <ProtectedRoute>
+              <InterventionsImprimer />
             </ProtectedRoute>
           }
         />
