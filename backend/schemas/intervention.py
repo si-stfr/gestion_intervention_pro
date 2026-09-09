@@ -12,6 +12,8 @@ class InterventionBase(BaseModel):
     titre: str
     description_de_la_panne: str
 
+    Date_de_la_demande: date
+
     date_debut: date
     echeance: date
     date_fin: date
@@ -100,6 +102,8 @@ class InterventionResponse(BaseModel):
     statut: str
     titre: str
     description_de_la_panne: str
+
+    Date_de_la_demande: date
 
     # ===== DEMANDE =====
     demandeur_id: int
