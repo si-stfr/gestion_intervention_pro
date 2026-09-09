@@ -54,6 +54,7 @@ CREATE TABLE `actions_realisees` (
 
 CREATE TABLE `interventions` (
   `id` int(11) NOT NULL,
+  `Date_de_la_demande` date NOT NULL,
   `titre` varchar(255) NOT NULL,
   `description_de_la_panne` text NOT NULL,
   `source_demande` enum('Direct','E-mail','Formcreator','Helpdesk','Other','Phone','Written') NOT NULL,
@@ -85,10 +86,10 @@ CREATE TABLE `interventions` (
 -- Déchargement des données de la table `interventions`
 --
 
-INSERT INTO `interventions` (`id`, `titre`, `description_de_la_panne`, `source_demande`, `urgence`, `impact`, `priorite`, `type_intervention`, `type_intervention_autre`, `diagnostique_effectue`, `resultat_intervention`, `commentaire`, `statut`, `date_debut`, `echeance`, `date_fin`, `lieu`, `demandeur_id`, `technicien_id`, `created_at`, `actions_realisees`, `actions_autre`, `manager_id`, `date_verification`, `lock_statut`) VALUES
-(1, 'Test', 'CONCLUANT', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'il apparait que c\'est bon', 'Problème résolu', 'Je sens que ça va être long...', 'EN_COURS', '2026-05-20', '2026-05-21', '2026-05-22', '99.9', 6, 5, '2026-05-19 12:59:02', 'Demander à Chatpgt', '', 7, '2026-05-22', 1),
-(3, 'test2', 'ceci est un nouveau test', 'Phone', 'Haute', 'Moyen', 'Moyenne', 'Installation', NULL, NULL, NULL, NULL, 'SIGNALE', '2026-05-22', '2026-05-23', '2026-05-24', '77.7', 8, 5, '2026-05-23 05:14:18', NULL, NULL, NULL, NULL, 0),
-(4, 'Test 3', 'J\'espère que ça marchera', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'ça peut marcher', 'Problème résolu', 'ça fonctionne', 'ABOUTI', '2026-09-07', '2026-09-08', '2026-09-09', 'CTM', 4, 5, '2026-09-07 20:45:51', 'Demander à Chatgpt', NULL, 7, '2026-09-07', 1);
+INSERT INTO `interventions` (`id`, `Date_de_la_demande`, `titre`, `description_de_la_panne`, `source_demande`, `urgence`, `impact`, `priorite`, `type_intervention`, `type_intervention_autre`, `diagnostique_effectue`, `resultat_intervention`, `commentaire`, `statut`, `date_debut`, `echeance`, `date_fin`, `lieu`, `demandeur_id`, `technicien_id`, `created_at`, `actions_realisees`, `actions_autre`, `manager_id`, `date_verification`, `lock_statut`) VALUES
+(1, '2026-05-20', 'Test', 'CONCLUANT', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'il apparait que c\'est bon', 'Problème résolu', 'Je sens que ça va être long...', 'EN_COURS', '2026-05-20', '2026-05-21', '2026-05-22', '99.9', 6, 5, '2026-05-19 12:59:02', 'Demander à Chatpgt', '', 7, '2026-05-22', 1),
+(3, '2026-05-22', 'test2', 'ceci est un nouveau test', 'Phone', 'Haute', 'Moyen', 'Moyenne', 'Installation', NULL, NULL, NULL, NULL, 'SIGNALE', '2026-05-22', '2026-05-23', '2026-05-24', '77.7', 8, 5, '2026-05-23 05:14:18', NULL, NULL, NULL, NULL, 0),
+(4, '2026-09-07', 'Test 3', 'J\'espère que ça marchera', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'ça peut marcher', 'Problème résolu', 'ça fonctionne', 'IMPOSSIBLE', '2026-09-07', '2026-09-08', '2026-09-09', 'CTM', 4, 5, '2026-09-07 20:45:51', 'Demander à Chatgpt', NULL, 7, '2026-09-07', 1);
 
 -- --------------------------------------------------------
 
