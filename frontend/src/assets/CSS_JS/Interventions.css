@@ -482,6 +482,20 @@ td {
   color: #cd2c2e;
 }
 
+/* =========================
+   IMPRIMER
+========================= */
+.btn-imprimer {
+  border: 2px solid #0074c7 !important;
+  color: #0074c7;
+  margin-right: 5px;
+}
+
+.btn-imprimer:hover {
+  background: #0074c7;
+  color: white;
+}
+
 .btn-supprimer:hover {
   background: #cd2c2e;
   color: white;
