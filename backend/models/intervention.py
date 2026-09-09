@@ -89,6 +89,8 @@ class Intervention(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
+    Date_de_la_demande = Column(Date, nullable=False)
+
     demandeur_id = Column(Integer, ForeignKey("users.id"))
     technicien_id = Column(Integer, ForeignKey("users.id"))
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
