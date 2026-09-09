@@ -1,0 +1,125 @@
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    #0f172a,
+    #1e293b
+  );
+  padding: 30px;
+}
+
+.register-box {
+  width: 500px;
+  background: white;
+  padding: 45px;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.register-title {
+  text-align: center;
+  font-size: 32px;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+/* INPUTS */
+.register-input {
+  width: calc(100% - 10px);
+
+  align-self: center;
+
+  padding: 15px 18px;
+
+  font-size: 16px;
+
+  border-radius: 14px;
+
+  outline: none;
+
+  transition: 0.25s;
+
+  background: #f8fafc;
+
+  box-sizing: border-box;
+}
+
+/* NOM UTILISATEUR */
+.input-username {
+  border: 2px solid #2563eb;
+}
+
+/* EMAIL */
+.input-email {
+  border: 2px solid #dc2626;
+}
+
+/* TELEPHONE */
+.input-telephone {
+  border: 2px solid #16a34a;
+}
+
+/* PASSWORD */
+.input-password {
+  border: 2px solid #eab308;
+}
+
+/* FOCUS */
+.register-input:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 10px rgba(0,0,0,0.08);
+}
+
+/* BUTTON */
+.register-button {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #373669;
+  border-radius: 14px;
+  background: #373669;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+  margin-top: 10px;
+}
+
+.register-button:hover {
+  background: white;
+  color: #373669;
+}
+
+/* LOGIN LINK */
+.login-link-text {
+  text-align: center;
+  font-size: 15px;
+}
+
+.login-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.login-link:hover {
+  opacity: 0.8;
+}
+
+/* ERROR */
+.error-message {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+}

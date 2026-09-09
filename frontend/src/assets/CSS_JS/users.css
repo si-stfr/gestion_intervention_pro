@@ -1,0 +1,194 @@
+.users-page {
+  padding: 30px;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* IMPORTANT */
+.page-content {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+.users-title {
+  font-size: 34px;
+  color: #2563eb;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* CARD */
+.users-card {
+  background: white;
+  padding: 35px;
+  border-radius: 22px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 700px;
+  margin-bottom: 40px;
+}
+
+/* INPUTS */
+.users-input,
+.users-select {
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 14px;
+  font-size: 16px;
+  outline: none;
+  transition: 0.25s;
+  box-sizing: border-box;
+  background: #f8fafc;
+}
+
+/* USERNAME */
+.input-username {
+  border: 2px solid #2563eb;
+}
+
+/* EMAIL */
+.input-email {
+  border: 2px solid #dc2626;
+}
+
+/* TELEPHONE */
+.input-telephone {
+  border: 2px solid #16a34a;
+}
+
+/* PASSWORD */
+.input-password {
+  border: 2px solid #eab308;
+}
+
+/* PROFIL */
+.users-select {
+  border: 2px solid #7c3aed;
+}
+
+/* FOCUS */
+.users-input:focus,
+.users-select:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 10px rgba(0,0,0,0.08);
+}
+
+/* BUTTON */
+.users-button {
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: #373669;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.users-button:hover {
+  opacity: 0.9;
+}
+
+/* USERS LIST */
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* USER ITEM */
+.user-item {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+/* USER INFOS */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-info p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* LABEL COLORS */
+.label-name {
+  color: #2563eb;
+  margin-right: 8px;
+}
+
+.label-email {
+  color: #dc2626;
+  margin-right: 8px;
+}
+
+.label-phone {
+  color: #16a34a;
+  margin-right: 8px;
+}
+
+.label-profil {
+  color: #eab308;
+  margin-right: 8px;
+}
+
+/* ACTIONS */
+.user-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* EDIT BUTTON */
+.btn-edit {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.btn-edit:hover {
+  opacity: 0.9;
+}
+
+/* DELETE BUTTON */
+.btn-delete {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #dc2626;
+  color: white;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.btn-delete:hover {
+  opacity: 0.9;
+}
+
+button:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  opacity: 0.5;
+}
