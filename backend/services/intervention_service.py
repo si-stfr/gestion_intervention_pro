@@ -80,13 +80,12 @@ def compute_statut(intervention):
     # 🔒 LOCK MANAGER / WORKFLOW
     if hasattr(intervention, "lock_statut") and intervention.lock_statut:
         return statut
-    
+
     if intervention.lock_statut:
         return statut
 
     if statut in ["ABOUTI", "IMPOSSIBLE"]:
         return statut
-    
 
     echeance = intervention.echeance
 
@@ -97,7 +96,7 @@ def compute_statut(intervention):
 
     if date_fin and today > date_fin:
         return "EN_RETARD"
-    
+
     if echeance and today > echeance:
         return "EN_RETARD"
 
@@ -150,7 +149,9 @@ def assign_manager(db: Session, intervention: Intervention, manager_id: int):
 # =========================================================
 # VALIDATION INTERVENTION PAR MANAGER
 # =========================================================
-def validate_intervention(db: Session, intervention: Intervention, statut: str, commentaire: str | None = None):
+def validate_intervention(
+    db: Session, intervention: Intervention, statut: str, commentaire: str | None = None
+):
 
     if statut not in [
         StatutIntervention.ABOUTI.value,
@@ -284,6 +285,7 @@ def update_intervention(db: Session, intervention: Intervention, data: dict):
 # CREATE INTERVENTION (LOGIQUE MÉTIER)
 # =========================================================
 
+
 def create_intervention(db: Session, data: dict):
 
     print("DATA REÇU =", data)  # DEBUG IMPORTANT
@@ -292,6 +294,10 @@ def create_intervention(db: Session, data: dict):
 
     # 🔥 COPIE SAFE (IMPORTANT)
     clean_data = dict(data)
+
+    # 🔥 AJOUTER LA DATE DE LA DEMANDE PAR DÉFAUT
+    if "Date_de_la_demande" not in clean_data or not clean_data["Date_de_la_demande"]:
+        clean_data["Date_de_la_demande"] = date.today()
 
     materiels_data = clean_data.pop("materiels", None)
     materiels_ids = clean_data.pop("materiels_ids", None)
@@ -307,17 +313,13 @@ def create_intervention(db: Session, data: dict):
         for m in materiels_data:
             materiel_id = m.get("id") or m.get("materiel", {}).get("id")
 
-            quantite = (
-                m.get("quantite")
-                or m.get("quantiteDemande")
-                or 1
-            )
+            quantite = m.get("quantite") or m.get("quantiteDemande") or 1
 
             db.execute(
                 intervention_materiel.insert().values(
                     intervention_id=new_intervention.id,
                     materiel_id=materiel_id,
-                    quantite=int(quantite)
+                    quantite=int(quantite),
                 )
             )
 
@@ -325,9 +327,7 @@ def create_intervention(db: Session, data: dict):
         for mid in materiels_ids:
             db.execute(
                 intervention_materiel.insert().values(
-                    intervention_id=new_intervention.id,
-                    materiel_id=mid,
-                    quantite=1
+                    intervention_id=new_intervention.id, materiel_id=mid, quantite=1
                 )
             )
 
@@ -335,20 +335,6 @@ def create_intervention(db: Session, data: dict):
     db.refresh(new_intervention)
 
     return new_intervention
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # def create_intervention(db: Session, data: dict):
@@ -360,7 +346,7 @@ def create_intervention(db: Session, data: dict):
 #     new_intervention = Intervention(**data)
 
 #     new_intervention.statut = StatutIntervention.SIGNALE
-    
+
 #     if materiels_ids:
 
 #         materiels = (
@@ -371,7 +357,7 @@ def create_intervention(db: Session, data: dict):
 
 #         new_intervention.materiels = materiels
 
-    
+
 #     db.commit()
 #     db.refresh(new_intervention)
 
