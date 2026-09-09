@@ -57,6 +57,12 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # =========================
                 "statut": statut,
                 # =========================
+                # DATE DE LA DEMANDE
+                # =========================
+                "Date_de_la_demande": (
+                    i.Date_de_la_demande.isoformat() if i.Date_de_la_demande else None
+                ),
+                # =========================
                 # IDS
                 # =========================
                 "demandeur_id": i.demandeur_id,
