@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 
 import Sidebar from "../components/Sidebar";
@@ -30,6 +31,7 @@ const normalizeStatut = (statut) => {
 
 export default function InterventionsImpossible() {
 
+    const navigate = useNavigate();
     const [interventions, setInterventions] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -220,6 +222,13 @@ export default function InterventionsImpossible() {
         }
     };
 
+    // ============================
+    // IMPRIMER INTERVENTION
+    // ============================
+    const imprimerIntervention = (titre, typeIntervention) => {
+        navigate(`/interventions/imprimer?titre=${encodeURIComponent(titre)}&typeIntervention=${encodeURIComponent(typeIntervention)}`);
+    };
+
     return (
         <div className="layout interventions-page">
 
@@ -342,7 +351,7 @@ export default function InterventionsImpossible() {
                                 }
                             >
                                 <option>Majeure</option>
-                                <option>Très haute</option>
+                                <option>Très Haute</option>
                                 <option>Moyenne</option>
                                 <option>Basse</option>
                                 <option>Très basse</option>
@@ -560,16 +569,23 @@ export default function InterventionsImpossible() {
                                                 : "-"}
                                         </td>
 
-                                        {canRenew && (
                                         <td>
                                         <div className="actions-buttons">
-
                                             <button
-                                                className="btn-renouveler"
-                                                onClick={() => startRenew(item)}
+                                                className="btn-imprimer"
+                                                onClick={() => imprimerIntervention(item.titre, item.type_intervention)}
                                             >
-                                                Renouveler
+                                                Imprimer
                                             </button>
+
+                                            {canRenew && (
+                                                <button
+                                                    className="btn-renouveler"
+                                                    onClick={() => startRenew(item)}
+                                                >
+                                                    Renouveler
+                                                </button>
+                                            )}
 
                                             {isAdmin && (
                                                 <button
@@ -581,7 +597,6 @@ export default function InterventionsImpossible() {
                                             )}
                                         </div>
                                         </td>
-                                    )}
                                     </tr>
                                 ))}
                             </tbody>
