@@ -59,8 +59,16 @@
 .input-password {
   padding: 10px;
   border-radius: 12px;
-  border: 2px solid red;
+  border: 2px solid red !important;
   outline: none;
+}
+
+.input-password:invalid {
+  border: 2px solid red !important;
+}
+
+.input-password:valid {
+  border: 2px solid red !important;
 }
 
 /* FOCUS EFFECT */
@@ -71,7 +79,7 @@
 
 .input-password:focus {
   transform: scale(1.02);
-  border-color: red;
+  border-color: red !important;
 }
 
 /* LOGIN BUTTON */
