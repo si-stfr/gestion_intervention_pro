@@ -1,0 +1,289 @@
+/* ============================
+   INTERVENTIONS IMPRIMER PAGE
+   ============================ */
+
+.imprimer-page {
+    background-color: white;
+    color: #333;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ============================
+   HEADER PRINCIPAL
+   ============================ */
+
+.header-principal {
+    margin-bottom: 20px;
+}
+
+.titre-1 {
+    background-color: #0074c7 !important;
+    color: white !important;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.titre-2 {
+    background-color: #cccccc !important;
+    color: black !important;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0;
+    border-bottom: 2px solid #999;
+}
+
+/* ============================
+   INFO INTERVENTION
+   ============================ */
+
+.info-intervention {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+}
+
+.info-titre {
+    text-align: left;
+}
+
+.mission-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #0074c7;
+}
+
+.demandeurs-list {
+    font-size: 12px;
+    color: #555;
+    margin-top: 8px;
+}
+
+/* ============================
+   TABLEAU INTERVENTIONS
+   ============================ */
+
+.tableau-wrapper {
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.tableau-interventions {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.tableau-interventions thead {
+    background-color: #f5f5f5;
+}
+
+.tableau-interventions th {
+    border: 1px solid #999;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: bold;
+    background-color: #eeeeee;
+    color: #333;
+}
+
+.tableau-interventions td {
+    border: 1px solid #999;
+    padding: 10px 8px;
+    vertical-align: top;
+    background-color: white;
+    word-wrap: break-word;
+    max-width: 150px;
+}
+
+.tableau-interventions tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.tableau-interventions tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* ============================
+   SECTION SIGNATURES
+   ============================ */
+
+.signatures-section {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 2px solid #999;
+}
+
+.signature-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    gap: 20px;
+}
+
+.signature-box {
+    flex: 1;
+    text-align: center;
+}
+
+.signature-label {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.signature-value {
+    font-size: 10px;
+    color: #666;
+    margin: 0;
+    padding-top: 20px;
+    border-bottom: 1px solid #999;
+}
+
+.managers-section {
+    margin-top: 30px;
+}
+
+.manager-signatures {
+    display: flex;
+    justify-content: space-around;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.manager-box {
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.manager-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    color: #0074c7;
+}
+
+.manager-role {
+    font-size: 11px;
+    color: #666;
+    margin: 0;
+}
+
+/* ============================
+   PRINT ACTIONS
+   ============================ */
+
+.print-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.btn-print,
+.btn-retour {
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-print {
+    background-color: #0074c7;
+    color: white;
+}
+
+.btn-print:hover {
+    background-color: #0056a0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 116, 199, 0.3);
+}
+
+.btn-retour {
+    background-color: #999;
+    color: white;
+}
+
+.btn-retour:hover {
+    background-color: #777;
+    transform: translateY(-2px);
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+}
+
+.no-data p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.no-data button {
+    padding: 10px 20px;
+    background-color: #0074c7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.no-data button:hover {
+    background-color: #0056a0;
+}
+
+/* ============================
+   PRINT STYLES
+   ============================ */
+
+@media print {
+    .print-actions {
+        display: none;
+    }
+
+    .imprimer-page {
+        padding: 0;
+        margin: 0;
+    }
+
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .tableau-interventions {
+        page-break-inside: avoid;
+    }
+
+    .signatures-section {
+        page-break-inside: avoid;
+    }
+
+    .tableau-interventions td,
+    .tableau-interventions th {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+    }
+}

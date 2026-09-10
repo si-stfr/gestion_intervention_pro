@@ -1,0 +1,25 @@
+Les différents Compte :
+Nom utilisateur : Mot de passe : rôle
+Lesi : Mrlesi : admin
+Admin : admin123
+Manager : manager
+Tidgy : Leflemmard : technicien
+Lory : Lehero : intervenant
+Axel : Feu : intervenant
+Mark : Legardien : manager
+
+Site pour hébergement :
+Frontend : Vercel (pour lancer le frontend en localhost utilisez la commande : npm run dev -- --host 127.0.0.1 )
+Backend : Render (pour lancer le backend en localhost utilisez la commande : uvicorn main:app --host 127.0.0.1 --port 8000 )
+Base de donnée : Aiven (modifiable via MysqlWorkbench) (adresse email : informatique@ville-saintfrancois.fr nom : sistfr) (pour lancer la base de donnée en localhost utilisez l'application Xampp Control Panel sur l'ordinateur et lancez Apache PUIS MySQL avec les boutons Start. Ensuite pour accéder directement à la base de donnée, appuyez sur le bouton Admin à la ligne de MySQL)
+
+Fonctionnement des interventions :
+
+Intervanant/Admin : Crée une intervention (Avec le statut "Signalé", "En cours" ou "En retard" automatiquement selon la date de début et de fin) 
+
+Technicien : Complète l'intervention qui lui a été assigné (Et lui attribut le statut "En attente validation")
+
+Manager : Valide l'intervention que le technicien lui aura assigné (Et lui attribut le statut final "Abouti" ou "Impossible".
+
+Une intervention avec le statut "Impossible" à la possibilité d'être renouveler par l'admin et l'intervenant sur la page des interventions impossibles
+

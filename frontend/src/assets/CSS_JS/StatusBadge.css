@@ -1,0 +1,28 @@
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-block;
+}
+
+.status-signale {
+  background: #3b82f6;
+}
+
+.status-encours {
+  background: #10b981;
+}
+
+.status-abouti {
+  background: #6b7280;
+}
+
+.status-retard {
+  background: orange;
+}
+
+.status-impossible {
+  background: purple;
+}
