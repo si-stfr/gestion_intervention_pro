@@ -57,13 +57,15 @@ app = FastAPI(
 # origins = [
 #     "http://localhost:5173",
 #     "http://127.0.0.1:5173",
+#     "http://localhost:5175",
+#     "http://127.0.0.1:5175",
 #     "http://192.168.10.220:5173"
 # ]
 load_dotenv()
 
 configured_origins = os.getenv(
     "ALLOWED_ORIGINS",
-    "https://gestion-intervention-pro-ruddy.vercel.app,http://localhost:5173",
+    "https://gestion-intervention-pro-ruddy.vercel.app,http://localhost:5173,http://127.0.0.1:5173"
 )
 origins = []
 for origin in configured_origins.split(","):
@@ -77,16 +79,14 @@ production_frontend_origin = "https://gestion-intervention-pro-ruddy.vercel.app"
 if production_frontend_origin not in origins:
     origins.append(production_frontend_origin)
 
+local_dev_origin_regex = r"https?://(localhost|127\.0\.0\.1):517[0-9]+"
 
 app.add_middleware(
     CORSMiddleware,
-
     allow_origins=origins,
-
+    allow_origin_regex=local_dev_origin_regex,
     allow_credentials=True,
-
     allow_methods=["*"],
-
     allow_headers=["*"],
 )
 

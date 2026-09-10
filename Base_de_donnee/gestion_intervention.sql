@@ -31,6 +31,10 @@ DROP TABLE IF EXISTS `refresh_tokens`;
 DROP TABLE IF EXISTS `interventions`;
 DROP TABLE IF EXISTS `materiels`;
 DROP TABLE IF EXISTS `users`;
+<<<<<<< HEAD
+=======
+DROP TABLE IF EXISTS `integration`;
+>>>>>>> 93c6603 (Fix local API URL, CORS, and admin seed)
 
 -- --------------------------------------------------------
 
@@ -91,6 +95,10 @@ INSERT INTO `interventions` (`id`, `Date_de_la_demande`, `titre`, `description_d
 (3, '2026-05-22', 'test2', 'ceci est un nouveau test', 'Phone', 'Haute', 'Moyen', 'Moyenne', 'Installation', NULL, NULL, NULL, NULL, 'SIGNALE', '2026-05-22', '2026-05-23', '2026-05-24', '77.7', 8, 5, '2026-05-23 05:14:18', NULL, NULL, NULL, NULL, 0),
 (4, '2026-09-07', 'Test 3', 'J\'espère que ça marchera', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'ça peut marcher', 'Problème résolu', 'ça fonctionne', 'IMPOSSIBLE', '2026-09-07', '2026-09-08', '2026-09-09', 'CTM', 4, 5, '2026-09-07 20:45:51', 'Demander à Chatgpt', NULL, 7, '2026-09-07', 1);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 93c6603 (Fix local API URL, CORS, and admin seed)
 -- --------------------------------------------------------
 
 --
@@ -256,7 +264,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_
 (5, 'Tidgy', 'Carnan.tidgy@gmail.com', '0690775522', 'TECHNICIEN', '2026-05-18 14:25:19', '$2b$10$0qCp1hd.1Wt15vjLA.AoMeQ1XDJ64U6zlYEKMyYKghNP6EqIzJ.f6'),
 (6, 'Lory', 'Lory.hero@outlook.fr', '0690778855', 'INTERVENANT', '2026-05-18 14:25:46', '$2b$10$yOXGD2i8ZJd8Blee3fe1puhvfVSJ9LfqXHg7yAc5xRox0Ek6wvh0G'),
 (7, 'Mark', 'Mark.evans@gmail.com', '0690775533', 'MANAGER', '2026-05-19 18:52:50', '$2b$10$vljOi2XobbwLXGKAyel2duqY.uq/wwru3ESXjIOmp5r9oxsD/LoGi'),
-(8, 'Axel', 'axel.blaze@gmail.com', '00690101010', 'INTERVENANT', '2026-05-23 01:07:17', '$2b$12$Zk.Up2Yg.tZvIKvWVwQeTubDluaCbFnd4LWxI1rlEknR66os3Q5j.');
+(8, 'Axel', 'axel.blaze@gmail.com', '00690101010', 'INTERVENANT', '2026-05-23 01:07:17', '$2b$12$Zk.Up2Yg.tZvIKvWVwQeTubDluaCbFnd4LWxI1rlEknR66os3Q5j.'),
+(9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 00:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS');
 
 --
 -- Index pour les tables déchargées

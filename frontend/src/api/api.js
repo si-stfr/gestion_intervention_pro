@@ -1,15 +1,16 @@
 import axios from "axios";
 
-export const API_URL = import.meta.env.VITE_API_URL;
+const DEFAULT_API_URL = "http://127.0.0.1:8000";
+export const API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL;
 
-console.log("API_URL =", API_URL)
+console.log("API_URL =", API_URL);
 /*
 =========================================================
 BASE URL BACKEND
 =========================================================
 */
 
-// const API_URL = "http://192.168.10.220:8000";
+// const API_URL = "http://127.0.0.1:8000";
 
 
 /*
