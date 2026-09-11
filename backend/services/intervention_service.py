@@ -206,8 +206,8 @@ def validate_intervention(
     ]:
         raise ValueError("Statut invalide")
 
-    normalized_piece = normalize_piece_jointe(piece_jointe)
-    if normalized_piece is not None:
+    if piece_jointe is not None:
+        normalized_piece = normalize_piece_jointe(piece_jointe)
         intervention.piece_jointe = normalized_piece
 
     intervention.statut = StatutIntervention(statut)

@@ -154,6 +154,30 @@ export default function ManagerDashboard() {
         reader.readAsDataURL(file);
     };
 
+    const handleDeleteAttachment = async (id) => {
+        const confirmDelete = window.confirm("Supprimer cette image ?");
+        if (!confirmDelete) return;
+
+        try {
+            await api.put(`/intervention/${id}`, {
+                piece_jointe: ""
+            });
+
+            const currentImage = attachments[id] || interventions.find(item => Number(item.id) === Number(id))?.piece_jointe;
+            attachmentRef.current[id] = null;
+            setSelectedImage((current) => (current === currentImage ? null : current));
+            setAttachments(prev => {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            });
+            fetchInterventions();
+        } catch (err) {
+            console.error(err);
+            alert("La suppression de l'image a échoué.");
+        }
+    };
+
     return (
         <div className="layout interventions-page">
 
@@ -324,6 +348,13 @@ export default function ManagerDashboard() {
                                                         onClick={() => setSelectedImage(attachments[item.id] || item.piece_jointe)}
                                                     >
                                                         Ouvrir
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="attachment-delete-btn"
+                                                        onClick={() => handleDeleteAttachment(item.id)}
+                                                    >
+                                                        Supprimer
                                                     </button>
                                                 </div>
                                             ) : (

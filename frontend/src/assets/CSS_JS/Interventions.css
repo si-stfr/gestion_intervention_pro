@@ -65,7 +65,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 8px;
   min-width: 90px;
+  flex-wrap: wrap;
 }
 
 .attachment-upload {
@@ -93,6 +95,7 @@
 }
 
 .attachment-open-btn,
+.attachment-delete-btn,
 .attachment-modal-close {
   border: none;
   border-radius: 8px;
@@ -105,8 +108,17 @@
 }
 
 .attachment-open-btn:hover,
+.attachment-delete-btn:hover,
 .attachment-modal-close:hover {
   background: #005d9f;
+}
+
+.attachment-delete-btn {
+  background: #c62828;
+}
+
+.attachment-delete-btn:hover {
+  background: #a81d1d;
 }
 
 .attachment-empty {
