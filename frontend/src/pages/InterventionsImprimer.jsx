@@ -10,6 +10,7 @@ export default function InterventionsImprimer() {
     const [interventions, setInterventions] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const titre = searchParams.get("titre");
     const typeIntervention = searchParams.get("typeIntervention");
@@ -138,6 +139,16 @@ export default function InterventionsImprimer() {
     };
 
     const acronym = generateAcronym(titre, typeIntervention);
+    const getAttachment = (item) => {
+        const value = item?.piece_jointe ?? item?.pieceJointe ?? item?.image ?? null;
+
+        if (typeof value === "string") {
+            const cleaned = value.trim();
+            return cleaned ? cleaned : null;
+        }
+
+        return value ?? null;
+    };
 
     // ============================
     // RENDU
@@ -177,6 +188,7 @@ export default function InterventionsImprimer() {
                             <th>Date de réalisation</th>
                             <th>Tâches réalisées</th>
                             <th>Observations</th>
+                            <th>Pièce jointe</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -189,6 +201,22 @@ export default function InterventionsImprimer() {
                                 <td>{item.date_verification ? new Date(item.date_verification).toLocaleDateString("fr-FR") : "-"}</td>
                                 <td>{item.actions_realisees || "-"}</td>
                                 <td>{item.commentaire || "-"}</td>
+                                <td>
+                                    {(() => {
+                                        const attachment = getAttachment(item);
+                                        return attachment ? (
+                                            <button
+                                                type="button"
+                                                className="attachment-open-btn"
+                                                onClick={() => setSelectedImage(attachment)}
+                                            >
+                                                Ouvrir
+                                            </button>
+                                        ) : (
+                                            <span className="attachment-empty">-</span>
+                                        );
+                                    })()}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -239,6 +267,21 @@ export default function InterventionsImprimer() {
                     Retour
                 </button>
             </div>
+
+            {selectedImage && (
+                <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
+                    <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            className="attachment-modal-close"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            ×
+                        </button>
+                        <img src={selectedImage} alt="Pièce jointe d'intervention" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

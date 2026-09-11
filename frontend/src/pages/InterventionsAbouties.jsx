@@ -35,6 +35,7 @@ export default function InterventionsAbouties() {
     const [interventions, setInterventions] = useState([]);
     const [users, setUsers] = useState([]);
     const [commentaires, setCommentaires] = useState({});
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const [loading, setLoading] = useState(true);
 
@@ -104,6 +105,17 @@ export default function InterventionsAbouties() {
         (item) => item.statut === "ABOUTI"
     );
 
+    const getAttachment = (item) => {
+        const value = item?.piece_jointe ?? item?.pieceJointe ?? item?.image ?? null;
+
+        if (typeof value === "string") {
+            const cleaned = value.trim();
+            return cleaned ? cleaned : null;
+        }
+
+        return value ?? null;
+    };
+
     return (
         <div className="layout interventions-page">
 
@@ -147,6 +159,7 @@ export default function InterventionsAbouties() {
                                     <th>Manager</th>
                                     <th>Date de vérification</th>
                                     <th>Créé le</th>
+                                    <th>Pièce jointe</th>
                                     {user?.profil === "ADMIN" && (
                                     <th>Actions</th>
                                     )}
@@ -234,6 +247,24 @@ export default function InterventionsAbouties() {
                                                 ? new Date(item.created_at).toLocaleString("fr-FR")
                                                 : "-"}
                                         </td>
+
+                                        <td>
+                                            {(() => {
+                                                const attachment = getAttachment(item);
+                                                return attachment ? (
+                                                    <button
+                                                        type="button"
+                                                        className="attachment-open-btn"
+                                                        onClick={() => setSelectedImage(attachment)}
+                                                    >
+                                                        Ouvrir
+                                                    </button>
+                                                ) : (
+                                                    <span className="attachment-empty">-</span>
+                                                );
+                                            })()}
+                                        </td>
+
                                         {user?.profil === "ADMIN" && (
                                             <td>
 
@@ -257,6 +288,21 @@ export default function InterventionsAbouties() {
                 )}
 
             </div>
+
+            {selectedImage && (
+                <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
+                    <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            className="attachment-modal-close"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            ×
+                        </button>
+                        <img src={selectedImage} alt="Pièce jointe d'intervention" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

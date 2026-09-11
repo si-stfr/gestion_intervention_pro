@@ -9,8 +9,8 @@ class RegisterSchema(BaseModel):
     username: str
     email: EmailStr
     telephone: str
-    password: str  # ✅ obligatoire
-    profil : str
+    password: str
+    profil: str = "INTERVENANT"
 
 # =========================================================
 # LOGIN

@@ -61,6 +61,103 @@
   cursor: text;
 }
 
+.attachment-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 90px;
+}
+
+.attachment-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 84px;
+  padding: 8px 12px;
+  border: 1px dashed #0074c7;
+  border-radius: 8px;
+  background: #eef8ff;
+  color: #0074c7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.attachment-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.attachment-open-btn,
+.attachment-modal-close {
+  border: none;
+  border-radius: 8px;
+  background: #0074c7;
+  color: white;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.attachment-open-btn:hover,
+.attachment-modal-close:hover {
+  background: #005d9f;
+}
+
+.attachment-empty {
+  color: #777;
+  font-style: italic;
+}
+
+.attachment-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.attachment-modal {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 18px 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.attachment-modal img {
+  display: block;
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.attachment-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+}
+
 /* FILTRES */
 .filters {
   display: flex;

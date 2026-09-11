@@ -138,11 +138,23 @@ export function AuthProvider({ children }) {
 
       console.error(err);
 
+      const rawDetail = err?.response?.data?.detail;
+
+      let message = "Erreur lors de la création du compte";
+
+      if (typeof rawDetail === "string") {
+        message = rawDetail;
+      } else if (Array.isArray(rawDetail)) {
+        message = rawDetail
+          .map((item) => item?.msg || item?.detail || "Erreur")
+          .join(" | ");
+      } else if (rawDetail?.msg) {
+        message = rawDetail.msg;
+      }
+
       return {
         success: false,
-        message:
-          err?.response?.data?.detail ||
-          "Erreur lors de la création du compte"
+        message
       };
     }
   };

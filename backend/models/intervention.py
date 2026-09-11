@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     Integer,
     String,
+    Text,
     Date,
     Float,
     Enum,
@@ -148,6 +149,7 @@ class Intervention(Base):
     lock_statut = Column(Boolean, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
+    piece_jointe = Column(Text, nullable=True)
 
     actions_relations = relationship(
         "ActionRealisee", back_populates="intervention", cascade="all, delete"

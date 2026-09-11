@@ -14,7 +14,8 @@ export default function Register() {
     username: "",
     email: "",
     telephone: "",
-    password: ""
+    password: "",
+    profil: "INTERVENANT"
   });
 
   const [error, setError] = useState("");

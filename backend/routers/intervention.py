@@ -112,6 +112,7 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # META
                 # =========================
                 "created_at": i.created_at,
+                "piece_jointe": i.piece_jointe,
                 # =========================
                 # RELATIONS (DISPLAY ONLY)
                 # =========================
@@ -342,7 +343,11 @@ def validate(
         raise HTTPException(status_code=403)
 
     return validate_intervention(
-        db, intervention, data["statut"], data.get("commentaire")
+        db,
+        intervention,
+        data["statut"],
+        data.get("commentaire"),
+        data.get("piece_jointe"),
     )
 
 

@@ -147,10 +147,38 @@ def assign_manager(db: Session, intervention: Intervention, manager_id: int):
 
 
 # =========================================================
+# NORMALISATION PIECE JOINTE
+# =========================================================
+def normalize_piece_jointe(piece_jointe: str | None):
+    if piece_jointe is None:
+        return None
+
+    normalized = str(piece_jointe).strip()
+
+    if normalized == "":
+        return None
+
+    if not (
+        normalized.startswith("data:image/png;base64,")
+        or normalized.startswith("data:image/jpeg;base64,")
+        or normalized.startswith("data:image/jpg;base64,")
+        or normalized.startswith("http://")
+        or normalized.startswith("https://")
+    ):
+        raise ValueError("La pièce jointe doit être une image PNG, JPG ou JPEG.")
+
+    return normalized
+
+
+# =========================================================
 # VALIDATION INTERVENTION PAR MANAGER
 # =========================================================
 def validate_intervention(
-    db: Session, intervention: Intervention, statut: str, commentaire: str | None = None
+    db: Session,
+    intervention: Intervention,
+    statut: str,
+    commentaire: str | None = None,
+    piece_jointe: str | None = None,
 ):
 
     if statut not in [
@@ -158,6 +186,10 @@ def validate_intervention(
         StatutIntervention.IMPOSSIBLE.value,
     ]:
         raise ValueError("Statut invalide")
+
+    normalized_piece = normalize_piece_jointe(piece_jointe)
+    if normalized_piece is not None:
+        intervention.piece_jointe = normalized_piece
 
     intervention.statut = StatutIntervention(statut)
 
@@ -233,6 +265,14 @@ def update_intervention(db: Session, intervention: Intervention, data: dict):
     # UPDATE DE TOUS LES CHAMPS
     # =========================================
     for key, value in data.items():
+
+        if key == "piece_jointe":
+            normalized_attachment = normalize_piece_jointe(value)
+            if normalized_attachment is not None:
+                setattr(intervention, "piece_jointe", normalized_attachment)
+            else:
+                setattr(intervention, "piece_jointe", None)
+            continue
 
         if key == "statut":
             if value is not None:

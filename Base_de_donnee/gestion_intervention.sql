@@ -13,7 +13,6 @@ START TRANSACTION;
 SET time_zone = '+00:00';
 SET FOREIGN_KEY_CHECKS = 0;
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -25,6 +24,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 USE `gestion_intervention`;
 
+-- Les tables dépendantes doivent être supprimées avant `interventions`.
 DROP TABLE IF EXISTS `intervention_materiel`;
 DROP TABLE IF EXISTS `actions_realisees`;
 DROP TABLE IF EXISTS `refresh_tokens`;
@@ -32,6 +32,7 @@ DROP TABLE IF EXISTS `interventions`;
 DROP TABLE IF EXISTS `materiels`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `integration`;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- --------------------------------------------------------
 
@@ -75,6 +76,7 @@ CREATE TABLE `interventions` (
   `demandeur_id` int(11) NOT NULL,
   `technicien_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `piece_jointe` text DEFAULT NULL,
   `actions_realisees` varchar(500) DEFAULT NULL,
   `actions_autre` varchar(255) DEFAULT NULL,
   `manager_id` int(11) DEFAULT NULL,
@@ -87,10 +89,10 @@ CREATE TABLE `interventions` (
 -- Déchargement des données de la table `interventions`
 --
 
-INSERT INTO `interventions` (`id`, `Date_de_la_demande`, `titre`, `description_de_la_panne`, `source_demande`, `urgence`, `impact`, `priorite`, `type_intervention`, `type_intervention_autre`, `diagnostique_effectue`, `resultat_intervention`, `commentaire`, `statut`, `date_debut`, `echeance`, `date_fin`, `lieu`, `demandeur_id`, `technicien_id`, `created_at`, `actions_realisees`, `actions_autre`, `manager_id`, `date_verification`, `lock_statut`) VALUES
-(1, '2026-05-20', 'Test', 'CONCLUANT', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'il apparait que c\'est bon', 'Problème résolu', 'Je sens que ça va être long...', 'EN_COURS', '2026-05-20', '2026-05-21', '2026-05-22', '99.9', 6, 5, '2026-05-19 12:59:02', 'Demander à Chatpgt', '', 7, '2026-05-22', 1),
-(3, '2026-05-22', 'test2', 'ceci est un nouveau test', 'Phone', 'Haute', 'Moyen', 'Moyenne', 'Installation', NULL, NULL, NULL, NULL, 'SIGNALE', '2026-05-22', '2026-05-23', '2026-05-24', '77.7', 8, 5, '2026-05-23 05:14:18', NULL, NULL, NULL, NULL, 0),
-(4, '2026-09-07', 'Test 3', 'J\'espère que ça marchera', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'ça peut marcher', 'Problème résolu', 'ça fonctionne', 'IMPOSSIBLE', '2026-09-07', '2026-09-08', '2026-09-09', 'CTM', 4, 5, '2026-09-07 20:45:51', 'Demander à Chatgpt', NULL, 7, '2026-09-07', 1);
+INSERT INTO `interventions` (`id`, `Date_de_la_demande`, `titre`, `description_de_la_panne`, `source_demande`, `urgence`, `impact`, `priorite`, `type_intervention`, `type_intervention_autre`, `diagnostique_effectue`, `resultat_intervention`, `commentaire`, `statut`, `date_debut`, `echeance`, `date_fin`, `lieu`, `demandeur_id`, `technicien_id`, `created_at`, `piece_jointe`, `actions_realisees`, `actions_autre`, `manager_id`, `date_verification`, `lock_statut`) VALUES
+(1, '2026-05-20', 'Test', 'CONCLUANT', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'il apparait que c''est bon', 'Problème résolu', 'on croise les doigts', 'ABOUTI', '2026-05-20', '2026-05-21', '2026-05-22', '99.9', 6, 5, '2026-05-19 12:59:02', 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wgARCAMgAhUDASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAwQBAgUABgf/xAAaAQADAQEBAQAAAAAAAAAAAAAAAQIDBAUG/9oADAMBAAIQAxAAAAHwUMx30tzEAtx4QHiwgXX5TXrc1EzLVJtUXd0hHTw4ieRXrQEdMJ908iOtzdYt0uvTId08n09YOmbN168jHJbAvxaorUtB1raEu6eHHWkK9eoDoSklK3qiImBT3cLp7mR3cHo4ej1mjzsDRq9UaVXaq06uwqRq/wAqzq6dEZkadYjN5+kQlDdFkvBazFOnpK9MhWe5Hd3D7ukcT0ojplOLdYOt13UTMhNqyOK2qiojgRWJiSenmT3SHdNQGO0SqRMIjp4I6ea6JgO7ua+o87HN5yVXuFn10IFnV0eucuup2qxhbsannw+krrXmqekHtp52N4GnRkV0l66kBP0W+eHUjOsqmqHKM+GxZ4hm8TETMhHTI4t1k4tMhF5s6ibwitLwik24BiMJMcXqlExIT0QE06ERE1RXphKO6Wo7pCOnmR0819Jjyfcvo+snyPJ+ut4+0HsbeOJJ6+/kSQvWz5c85+h7FOsdGFjvCalvpzLCertz5a+1Xpz88v6YfXfl6+iU36sYekvfagHSrG+XTVDjKEnHnhE90zaY4LWHKZK1kczFg6thBwrVlxW0CrFokrHQHVtVHR3CiLQEdNmq9eWUmeZHTwj9aOjOInk47uRHVlO1hcqYInJTxM6J02DYVs9fRt+UJlr7JvxDONe1N493GPSVym45j0ISuJIGoPq5cRP0Y+1eYp6NLr7McegC+9AOnTHXMh5fHFebRGU2rIXmkhwrDRHRyOieRHWqytCjkrFoRXry1WLwyszzUdPBEzzI63OT8XunMMGiWGLRIPrcnWZ4dZtwqdfgpNuCvW4K2jkykWlaPtY9st/SO+QPh0e3a8S7zP1vYL+PO5QhL85JXWH28vn1PTL9+vnaa6O/ooA0aR15tdBXDEHdGeNR2olEx0kzHUT0QE16ERHcie7qXdPCrMy1HWllZtDI63CbiKbxcVqy6dMIiOhPonkT3Qy01qi8UgL8PgLw5C9Y4JtSUX6JHxBVVuu4pc9/TaXjWefp9wz47S5VvjUbz4Brv06eDGQ9ID0jzY9rP6/RzltIWfblD0FObnD0xnj3RzXd3Dju5EdPNdPSzu6WomeZ3dzXR3Bbo5jEG7SRSSAHU1UBqbkxcSQFVioAqeiBVNUBQSEUmeR0xwW6vMvakhaswOOtyJtWWysozOmzoeZNh1eye8Ro8Ovq65ejhwVA9Xr83Dz/AE6vqPzQtdDq9TMW1wYdGZDS+HLWLVmOieJ7ulnW7mdMSyY6BdHcE90Mno4H5OO3Xos10WsMXF5AeNwAg8DBU/Sl4PUF6mqINTUQLrwivTzUWjhzMSEzEhPdzO6eCYnhwUdZvS0/Nm5+v2mj4fV4tfTjSfx85dLWD3eb5tP1Wd6vRhq6YNPV', 'Demander à Chatpgt', '', 7, '2026-05-22', 1),
+(3, '2026-05-22', 'test2', 'ceci est un nouveau test', 'Phone', 'Haute', 'Moyen', 'Moyenne', 'Installation', NULL, NULL, NULL, NULL, 'SIGNALE', '2026-05-22', '2026-05-23', '2026-05-24', '77.7', 8, 5, '2026-05-23 05:14:18', NULL, NULL, NULL, NULL, NULL, 0),
+(4, '2026-09-07', 'Test 3', 'J''espère que ça marchera', 'Direct', 'Très haute', 'Très haut', 'Majeure', 'Livraison', NULL, 'ça peut marcher', 'Problème résolu', 'ça fonctionne', 'IMPOSSIBLE', '2026-09-07', '2026-09-08', '2026-09-09', 'CTM', 4, 5, '2026-09-07 20:45:51', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHMAAACwCAYAAAA8P1H8AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAh1SURBVHhe7Z1BbBtVGsf/rowgSEWxUa0Ne7BwhSEpahUUFJNKkQBFRGhXHJqtV9kDB9IkVeBUfGKtqHj3lOUCiWiicOCwaM2mB7QrKI0oUqW2Ro2oqCABo1j1ha5c4VYNqqkUMXuY8cz42W4dO35x/v5+0qjON88z897P3/fejOLU88uduwYECvaoAWH3IjKJEJlEeADInEmCZCYRHgCGYUhy7mY8Hg8Mw5DMZEJkEiEyiRCZRIhMIkQmESKTCJFJhMgkQmQSITKJEJlEiEwiRCYRIpMIkQmESKTCJFJhMgkQmQS4ZkZPSDfGiJBMpMIkUmEXWbf/Oe36j5hF/CPvzxtv5bMJEJkEiEyiR', 'Demander à Chatgpt', NULL, 7, '2026-09-07', 1);
 
 
 -- --------------------------------------------------------
@@ -259,8 +261,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_
 (6, 'Lory', 'Lory.hero@outlook.fr', '0690778855', 'INTERVENANT', '2026-05-18 14:25:46', '$2b$10$yOXGD2i8ZJd8Blee3fe1puhvfVSJ9LfqXHg7yAc5xRox0Ek6wvh0G'),
 (7, 'Mark', 'Mark.evans@gmail.com', '0690775533', 'MANAGER', '2026-05-19 18:52:50', '$2b$10$vljOi2XobbwLXGKAyel2duqY.uq/wwru3ESXjIOmp5r9oxsD/LoGi'),
 (8, 'Axel', 'axel.blaze@gmail.com', '00690101010', 'INTERVENANT', '2026-05-23 01:07:17', '$2b$12$Zk.Up2Yg.tZvIKvWVwQeTubDluaCbFnd4LWxI1rlEknR66os3Q5j.'),
-(9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 00:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS');
-
+(9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 00:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS'),
+(10, 'Rayapin', 'Grayapin@ville-saintfrancois.fr', '0690489010', 'INTERVENANT', '2026-09-10 15:14:45', '$2b$12$0z.HgZEHjJ6HDhOXt3JtneKia2s1MkAsnBZEyRU5dSE0VnE7L4E1S');
 --
 -- Index pour les tables déchargées
 --
@@ -339,7 +341,7 @@ ALTER TABLE `refresh_tokens`
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Contraintes pour les tables déchargées

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from database import Base
+from database import Base, ensure_piece_jointe_column
 from database import engine
 from dotenv import load_dotenv
 
@@ -38,6 +38,7 @@ from routers.materiels import router as materiels_router
 # =========================================================
 
 Base.metadata.create_all(bind=engine)
+ensure_piece_jointe_column()
 
 
 # =========================================================

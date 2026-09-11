@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../api/api";
 import Sidebar from "../components/Sidebar";
 
@@ -33,6 +33,9 @@ export default function ManagerDashboard() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [commentaires, setCommentaires] = useState({});
+    const [attachments, setAttachments] = useState({});
+    const [selectedImage, setSelectedImage] = useState(null);
+    const attachmentRef = useRef({});
 
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -95,17 +98,53 @@ export default function ManagerDashboard() {
         );
 
         if (!confirmSubmit) return;
+
+        const attachment = attachmentRef.current[id] || attachments[id] || interventions.find(item => Number(item.id) === Number(id))?.piece_jointe;
+
+        if (!attachment) {
+            alert("Veuillez joindre une image PNG, JPG ou JPEG avant de valider l'intervention.");
+            return;
+        }
+
         try {
             await api.put(`/intervention/${id}/validate`, {
                 statut,
-                commentaire: commentaires[id] || ""
+                commentaire: commentaires[id] || "",
+                piece_jointe: attachment
             });
 
+            setAttachments(prev => {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            });
             fetchInterventions();
 
         } catch (err) {
             console.error(err);
+            alert("La validation a échoué. Vérifiez la pièce jointe ou le format de l'image.");
         }
+    };
+
+    const handleAttachmentChange = (id, file) => {
+        if (!file) return;
+
+        const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+        if (!allowedTypes.includes(file.type)) {
+            alert("Seuls les formats PNG, JPG et JPEG sont autorisés.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = reader.result;
+            attachmentRef.current[id] = dataUrl;
+            setAttachments(prev => ({
+                ...prev,
+                [id]: dataUrl
+            }));
+        };
+        reader.readAsDataURL(file);
     };
 
     return (
@@ -153,6 +192,7 @@ export default function ManagerDashboard() {
                                     <th>Manager</th>
                                     <th>Date de vérification</th>
                                     <th>Créé le</th>
+                                    <th>Pièce jointe</th>
                                     <th>Statut Final</th>
                                 </tr>
                             </thead>
@@ -267,7 +307,31 @@ export default function ManagerDashboard() {
                                                 : "-"}
                                         </td>
 
-                                        {/* 24 ACTIONS */}
+                                        {/* 24 PIÈCE JOINTE */}
+                                        <td>
+                                            {(attachments[item.id] || item.piece_jointe) ? (
+                                                <div className="attachment-cell">
+                                                    <button
+                                                        type="button"
+                                                        className="attachment-open-btn"
+                                                        onClick={() => setSelectedImage(attachments[item.id] || item.piece_jointe)}
+                                                    >
+                                                        Ouvrir
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <label className="attachment-upload">
+                                                    <input
+                                                        type="file"
+                                                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                                                        onChange={(e) => handleAttachmentChange(item.id, e.target.files?.[0])}
+                                                    />
+                                                    <span>Ajouter</span>
+                                                </label>
+                                            )}
+                                        </td>
+
+                                        {/* 25 ACTIONS */}
                                         <td>
                                             <div className="actions-buttons">
 
@@ -298,6 +362,21 @@ export default function ManagerDashboard() {
                 )}
 
             </div>
+
+            {selectedImage && (
+                <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
+                    <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            className="attachment-modal-close"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            ×
+                        </button>
+                        <img src={selectedImage} alt="Pièce jointe d'intervention" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

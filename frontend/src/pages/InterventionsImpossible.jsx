@@ -37,6 +37,7 @@ export default function InterventionsImpossible() {
     const [loading, setLoading] = useState(true);
     const [editId, setEditId] = useState(null);
     const [commentaires, setCommentaires] = useState({});
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const techniciens = users.filter(u => u.profil === "TECHNICIEN");
     const user = JSON.parse(localStorage.getItem("user"));
@@ -129,6 +130,17 @@ export default function InterventionsImpossible() {
     const filteredInterventions = interventions.filter(
         (item) => item.statut === "IMPOSSIBLE"
     );
+
+    const getAttachment = (item) => {
+        const value = item?.piece_jointe ?? item?.pieceJointe ?? item?.image ?? null;
+
+        if (typeof value === "string") {
+            const cleaned = value.trim();
+            return cleaned ? cleaned : null;
+        }
+
+        return value ?? null;
+    };
 
     // ============================
     // START RENEW
@@ -482,8 +494,8 @@ export default function InterventionsImpossible() {
                                     <th>Manager</th>
                                     <th>Date de vérification</th>
                                     <th>Créé le</th>
-                                    {canRenew && <th>Actions</th>}
-                                   
+                                    <th>Pièce jointe</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
 
@@ -570,32 +582,49 @@ export default function InterventionsImpossible() {
                                         </td>
 
                                         <td>
-                                        <div className="actions-buttons">
-                                            <button
-                                                className="btn-imprimer"
-                                                onClick={() => imprimerIntervention(item.titre, item.type_intervention)}
-                                            >
-                                                Imprimer
-                                            </button>
+                                            {(() => {
+                                                const attachment = getAttachment(item);
+                                                return attachment ? (
+                                                    <button
+                                                        type="button"
+                                                        className="attachment-open-btn"
+                                                        onClick={() => setSelectedImage(attachment)}
+                                                    >
+                                                        Ouvrir
+                                                    </button>
+                                                ) : (
+                                                    <span className="attachment-empty">-</span>
+                                                );
+                                            })()}
+                                        </td>
 
-                                            {canRenew && (
+                                        <td>
+                                            <div className="actions-buttons">
                                                 <button
-                                                    className="btn-renouveler"
-                                                    onClick={() => startRenew(item)}
+                                                    className="btn-imprimer"
+                                                    onClick={() => imprimerIntervention(item.titre, item.type_intervention)}
                                                 >
-                                                    Renouveler
+                                                    Imprimer
                                                 </button>
-                                            )}
 
-                                            {isAdmin && (
-                                                <button
-                                                    className="btn-supprimer"
-                                                    onClick={() => deleteIntervention(item.id)}
-                                                >
-                                                    Supprimer
-                                                </button>
-                                            )}
-                                        </div>
+                                                {canRenew && (
+                                                    <button
+                                                        className="btn-renouveler"
+                                                        onClick={() => startRenew(item)}
+                                                    >
+                                                        Renouveler
+                                                    </button>
+                                                )}
+
+                                                {isAdmin && (
+                                                    <button
+                                                        className="btn-supprimer"
+                                                        onClick={() => deleteIntervention(item.id)}
+                                                    >
+                                                        Supprimer
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -607,6 +636,21 @@ export default function InterventionsImpossible() {
                 )}
 
             </div>
+
+            {selectedImage && (
+                <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
+                    <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            className="attachment-modal-close"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            ×
+                        </button>
+                        <img src={selectedImage} alt="Pièce jointe d'intervention" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

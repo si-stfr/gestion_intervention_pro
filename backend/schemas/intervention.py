@@ -140,6 +140,7 @@ class InterventionResponse(BaseModel):
     # ===== MANAGER =====
     manager_id: Optional[int] = None
     date_verification: Optional[date] = None
+    piece_jointe: Optional[str] = None
     materiels: list[MaterielResponse] = []
 
     class Config:
@@ -167,6 +168,7 @@ class InterventionUpdate(BaseModel):
     date_fin: Optional[str] = None
 
     lieu: str | None = None
+    piece_jointe: Optional[str] = None
 
     class Config:
         from_attributes = True
