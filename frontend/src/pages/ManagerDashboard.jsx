@@ -39,6 +39,13 @@ export default function ManagerDashboard() {
 
     const user = JSON.parse(localStorage.getItem("user"));
 
+    const isImageSourceValid = (value) => {
+        if (typeof value !== "string") return false;
+        const trimmed = value.trim();
+        if (!trimmed) return false;
+        return /^data:image\/(png|jpeg|jpg);base64,/.test(trimmed) || /^https?:\/\//i.test(trimmed);
+    };
+
     // ============================
     // FETCH INTERVENTIONS
     // ============================
@@ -363,7 +370,7 @@ export default function ManagerDashboard() {
 
             </div>
 
-            {selectedImage && (
+            {selectedImage && isImageSourceValid(selectedImage) && (
                 <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
                     <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
                         <button
@@ -373,7 +380,14 @@ export default function ManagerDashboard() {
                         >
                             ×
                         </button>
-                        <img src={selectedImage} alt="Pièce jointe d'intervention" />
+                        <img
+                            src={selectedImage}
+                            alt="Pièce jointe d'intervention"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                setSelectedImage(null);
+                            }}
+                        />
                     </div>
                 </div>
             )}

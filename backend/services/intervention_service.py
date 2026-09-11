@@ -1,3 +1,5 @@
+import base64
+import re
 from datetime import date, datetime
 from sqlalchemy.orm import Session
 
@@ -149,6 +151,22 @@ def assign_manager(db: Session, intervention: Intervention, manager_id: int):
 # =========================================================
 # NORMALISATION PIECE JOINTE
 # =========================================================
+def _is_valid_base64_data_url(value: str) -> bool:
+    match = re.fullmatch(r"data:image/(png|jpeg|jpg);base64,([A-Za-z0-9+/=\r\n]+)", value)
+    if not match:
+        return False
+
+    payload = match.group(2)
+    if not payload:
+        return False
+
+    try:
+        base64.b64decode(payload, validate=True)
+        return True
+    except Exception:
+        return False
+
+
 def normalize_piece_jointe(piece_jointe: str | None):
     if piece_jointe is None:
         return None
@@ -158,16 +176,17 @@ def normalize_piece_jointe(piece_jointe: str | None):
     if normalized == "":
         return None
 
-    if not (
-        normalized.startswith("data:image/png;base64,")
-        or normalized.startswith("data:image/jpeg;base64,")
-        or normalized.startswith("data:image/jpg;base64,")
-        or normalized.startswith("http://")
-        or normalized.startswith("https://")
-    ):
-        raise ValueError("La pièce jointe doit être une image PNG, JPG ou JPEG.")
+    if normalized.startswith("data:image/"):
+        if not _is_valid_base64_data_url(normalized):
+            raise ValueError(
+                "La pièce jointe doit être une image PNG, JPG ou JPEG valide encodée en base64."
+            )
+        return normalized
 
-    return normalized
+    if normalized.startswith("http://") or normalized.startswith("https://"):
+        return normalized
+
+    raise ValueError("La pièce jointe doit être une image PNG, JPG ou JPEG.")
 
 
 # =========================================================

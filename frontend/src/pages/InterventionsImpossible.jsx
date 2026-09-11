@@ -131,6 +131,13 @@ export default function InterventionsImpossible() {
         (item) => item.statut === "IMPOSSIBLE"
     );
 
+    const isImageSourceValid = (value) => {
+        if (typeof value !== "string") return false;
+        const trimmed = value.trim();
+        if (!trimmed) return false;
+        return /^data:image\/(png|jpeg|jpg);base64,/.test(trimmed) || /^https?:\/\//i.test(trimmed);
+    };
+
     const getAttachment = (item) => {
         const value = item?.piece_jointe ?? item?.pieceJointe ?? item?.image ?? null;
 
@@ -584,7 +591,7 @@ export default function InterventionsImpossible() {
                                         <td>
                                             {(() => {
                                                 const attachment = getAttachment(item);
-                                                return attachment ? (
+                                                return attachment && isImageSourceValid(attachment) ? (
                                                     <button
                                                         type="button"
                                                         className="attachment-open-btn"
@@ -637,7 +644,7 @@ export default function InterventionsImpossible() {
 
             </div>
 
-            {selectedImage && (
+            {selectedImage && isImageSourceValid(selectedImage) && (
                 <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
                     <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
                         <button
@@ -647,7 +654,14 @@ export default function InterventionsImpossible() {
                         >
                             ×
                         </button>
-                        <img src={selectedImage} alt="Pièce jointe d'intervention" />
+                        <img
+                            src={selectedImage}
+                            alt="Pièce jointe d'intervention"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                setSelectedImage(null);
+                            }}
+                        />
                     </div>
                 </div>
             )}
