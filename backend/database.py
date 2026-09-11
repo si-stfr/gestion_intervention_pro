@@ -52,13 +52,21 @@ def ensure_piece_jointe_column():
 
     with engine.begin() as conn:
         try:
-            result = conn.execute(
+            data_type = conn.execute(
                 text(
-                    "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'piece_jointe'"
+                    "SELECT DATA_TYPE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'piece_jointe'"
                 )
             ).scalar()
-            if result == 0:
-                conn.execute(text("ALTER TABLE interventions ADD COLUMN piece_jointe TEXT NULL"))
+            if data_type is None:
+                conn.execute(
+                    text("ALTER TABLE interventions ADD COLUMN piece_jointe LONGTEXT NULL")
+                )
+            elif data_type.lower() != "longtext":
+                # La colonne existait en TEXT (limite ~64 Ko), trop petite pour une image
+                # encodée en base64 -> on l'agrandit en LONGTEXT (jusqu'à 4 Go).
+                conn.execute(
+                    text("ALTER TABLE interventions MODIFY COLUMN piece_jointe LONGTEXT NULL")
+                )
         except Exception:
             pass
 

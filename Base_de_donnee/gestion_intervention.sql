@@ -76,7 +76,7 @@ CREATE TABLE `interventions` (
   `demandeur_id` int(11) NOT NULL,
   `technicien_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `piece_jointe` text DEFAULT NULL,
+  `piece_jointe` longtext DEFAULT NULL,
   `actions_realisees` varchar(500) DEFAULT NULL,
   `actions_autre` varchar(255) DEFAULT NULL,
   `manager_id` int(11) DEFAULT NULL,
