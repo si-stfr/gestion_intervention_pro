@@ -78,12 +78,13 @@ production_frontend_origin = "https://gestion-intervention-pro-ruddy.vercel.app"
 if production_frontend_origin not in origins:
     origins.append(production_frontend_origin)
 
+vercel_origin_regex = r"https://.*\.vercel\.app"
 local_dev_origin_regex = r"https?://(localhost|127\.0\.0\.1):517[0-9]+"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=local_dev_origin_regex,
+    allow_origin_regex=f"{vercel_origin_regex}|{local_dev_origin_regex}",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -342,13 +342,16 @@ def validate(
     if intervention.manager_id != user.id:
         raise HTTPException(status_code=403)
 
-    return validate_intervention(
-        db,
-        intervention,
-        data["statut"],
-        data.get("commentaire"),
-        data.get("piece_jointe"),
-    )
+    try:
+        return validate_intervention(
+            db,
+            intervention,
+            data["statut"],
+            data.get("commentaire"),
+            data.get("piece_jointe"),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # =========================================================
