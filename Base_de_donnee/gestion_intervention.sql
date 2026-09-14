@@ -295,6 +295,26 @@ ALTER TABLE `materiels`
   ADD KEY `utilisateur_concerne_id` (`utilisateur_concerne_id`);
 
 --
+-- Structure de la table `password_reset_tokens`
+--
+
+CREATE TABLE `password_reset_tokens` (
+  `id` int(11) NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `password_reset_tokens`
+--
+
+INSERT INTO `password_reset_tokens` (`id`, `token_hash`, `user_id`, `expires_at`, `used`) VALUES
+(1, '46d8d35fc5b346cd3dd0e7bf7a5f2ee138079b76efed4c727a9f0bcbf32862bc', 4, '2026-09-14 15:44:19', 1),
+(2, '5f9104a8167e784488accba2c88da998ae07a02c587e816e26ca40bd6dbd4eb5', 4, '2026-09-14 15:46:32', 1);
+
+--
 -- Index pour la table `refresh_tokens`
 --
 ALTER TABLE `refresh_tokens`
@@ -374,6 +394,15 @@ ALTER TABLE `intervention_materiel`
 ALTER TABLE `materiels`
   ADD CONSTRAINT `materiels_ibfk_1` FOREIGN KEY (`intervention_id`) REFERENCES `interventions` (`id`),
   ADD CONSTRAINT `materiels_ibfk_2` FOREIGN KEY (`utilisateur_concerne_id`) REFERENCES `users` (`id`);
+
+--
+-- Index pour la table `password_reset_tokens`
+--
+ALTER TABLE `password_reset_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ix_password_reset_tokens_token_hash` (`token_hash`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `ix_password_reset_tokens_id` (`id`);
 
 --
 -- Contraintes pour la table `refresh_tokens`
