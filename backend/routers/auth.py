@@ -6,13 +6,21 @@ from models import user
 from models.user import User
 from models.refresh_token import RefreshToken
 
-from schemas.auth import RegisterSchema, LoginSchema, AuthUserSchema
+from schemas.auth import (
+    RegisterSchema,
+    LoginSchema,
+    AuthUserSchema,
+    ForgotPasswordSchema,
+    ResetPasswordSchema,
+)
 
 from services.auth_service import (
     authenticate_user,
     create_access_token,
     create_refresh_token,
     create_user,
+    request_password_reset,
+    reset_password,
 )
 
 from middleware.auth_middleware import get_current_user
@@ -87,6 +95,43 @@ def login(user: LoginSchema, db: Session = Depends(get_db)):
             "profil": db_user.profil.value,
         },
     }
+
+
+# =========================================================
+# MOT DE PASSE OUBLIÉ
+# =========================================================
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordSchema, db: Session = Depends(get_db)):
+
+    request_password_reset(db, payload.email)
+
+    # Message générique : ne révèle jamais si l'email existe en base.
+    return {
+        "message": "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé."
+    }
+
+
+# =========================================================
+# RÉINITIALISATION DU MOT DE PASSE
+# =========================================================
+@router.post("/reset-password")
+def reset_password_endpoint(payload: ResetPasswordSchema, db: Session = Depends(get_db)):
+
+    if len(payload.new_password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail="Le mot de passe doit contenir au moins 8 caractères",
+        )
+
+    success = reset_password(db, payload.token, payload.new_password)
+
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Lien de réinitialisation invalide ou expiré",
+        )
+
+    return {"message": "Mot de passe réinitialisé avec succès"}
 
 
 # =========================================================

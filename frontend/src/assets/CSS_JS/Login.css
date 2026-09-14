@@ -36,6 +36,13 @@
   text-align: center;
 }
 
+/* SUCCESS */
+.login-success {
+  color: #16a34a;
+  font-size: 14px;
+  text-align: center;
+}
+
 /* LABELS */
 .label-user {
   color: blue;
@@ -97,6 +104,20 @@
 
 .btn-login:hover {
   background-color: #16a34a;
+}
+
+/* FORGOT PASSWORD LINK */
+.forgot-password-link {
+  display: block;
+  text-align: center;
+  margin-top: 4px;
+  color: #0074c7;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
 }
 
 /* REGISTER TEXT */

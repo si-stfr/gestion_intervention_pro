@@ -45,6 +45,18 @@ class TokenDataSchema(BaseModel):
 
 
 # =========================================================
+# MOT DE PASSE OUBLIÉ
+# =========================================================
+class ForgotPasswordSchema(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordSchema(BaseModel):
+    token: str
+    new_password: str
+
+
+# =========================================================
 # RESPONSE USER AUTH (frontend login)
 # =========================================================
 class AuthUserSchema(BaseModel):

@@ -11,6 +11,8 @@ import Dashboard from "../pages/Dashboard";
 
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 import AdminDashboard from "../pages/AdminDashboard";
 import TechnicienDashboard from "../pages/TechnicienDashboard";
@@ -51,6 +53,16 @@ export default function AppRoutes() {
         <Route
           path="/register"
           element={<Register />}
+        />
+
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
+        />
+
+        <Route
+          path="/reset-password"
+          element={<ResetPassword />}
         />
 
 

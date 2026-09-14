@@ -19,6 +19,7 @@ from models.intervention import Intervention
 from models.refresh_token import RefreshToken
 from models.materiel import Materiel
 from models.action_realisee import ActionRealisee
+from models.password_reset_token import PasswordResetToken
 
 
 # =========================================================
