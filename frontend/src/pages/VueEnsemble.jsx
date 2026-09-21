@@ -45,8 +45,7 @@ export default function VueEnsemble() {
   EN_RETARD: "En retard",
   EN_ATTENTE_VALIDATION: "En attente validation",
   ABOUTI: "Terminée",
-  IMPOSSIBLE: "Non Résolues",
-  RESOLU : "Resolu"
+  IMPOSSIBLE: "Non Résolue",
 };
 
   useEffect(() => {
@@ -117,8 +116,6 @@ export default function VueEnsemble() {
       return "abouti";
     case "IMPOSSIBLE":
       return "impossible";
-    case "RESOLU":
-      return "resolu";
     default:
       return "";
     }

@@ -18,9 +18,8 @@ const statutLabels = {
   EN_COURS: "En cours",
   EN_RETARD: "En retard",
   EN_ATTENTE_VALIDATION: "En attente validation",
-  ABOUTI: "Abouti",
-  IMPOSSIBLE: "Impossible",
-  RESOLU: "Résolu"
+  ABOUTI: "Terminée",
+  IMPOSSIBLE: "Non résolue",
 };
 
 const normalizeStatut = (statut) => {
@@ -37,8 +36,6 @@ const normalizeStatut = (statut) => {
       return "abouti";
     case "IMPOSSIBLE":
       return "impossible";
-    case "RESOLU":
-      return "resolu";
     default:
       return "";
   }
@@ -147,7 +144,6 @@ export default function TechnicienDashboard() {
             "EN_COURS",
             "EN_RETARD",
             "EN_ATTENTE_VALIDATION",
-            "RESOLU"
           ].includes(item.statut) &&
           (
               selectedStatus === "" ||

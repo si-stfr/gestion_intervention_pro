@@ -19,7 +19,7 @@ const statutLabels = {
   EN_RETARD: "En retard",
   EN_ATTENTE_VALIDATION: "En attente validation",
   ABOUTI: "Terminée",
-  IMPOSSIBLE: "Impossible",
+  IMPOSSIBLE: "Non résolue",
   RESOLU : "Resolu"
 };
 
@@ -629,11 +629,11 @@ export default function Interventions() {
                 </option>
 
                 <option value="ABOUTI">
-                  Abouti
+                  Terminée
                 </option>
 
                 <option value="IMPOSSIBLE">
-                  Impossible
+                  Non résolue
                 </option>
               </select>
 

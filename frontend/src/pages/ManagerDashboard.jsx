@@ -288,14 +288,14 @@ export default function ManagerDashboard() {
                                                     className="btn-abouti"
                                                     onClick={() => validateIntervention(item.id, "ABOUTI")}
                                                 >
-                                                    Abouti
+                                                    Terminée
                                                 </button>
 
                                                 <button
                                                     className="btn-impossible"
                                                     onClick={() => validateIntervention(item.id, "IMPOSSIBLE")}
                                                 >
-                                                    Impossible
+                                                    Non résolue
                                                 </button>
 
                                             </div>
