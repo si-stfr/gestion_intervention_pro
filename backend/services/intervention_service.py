@@ -102,6 +102,9 @@ def compute_statut(intervention):
     if echeance and today > echeance:
         return "EN_RETARD"
 
+    if statut == "SIGNALE" and date_debut and today >= date_debut:
+        return "EN_COURS"
+
     return statut
 
 
