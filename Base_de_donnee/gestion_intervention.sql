@@ -125,9 +125,6 @@ CREATE TABLE `intervention_materiel` (
 -- Déchargement des données de la table `intervention_materiel`
 --
 
-INSERT INTO `intervention_materiel` (`intervention_id`, `materiel_id`, `quantite`) VALUES
-(4, 1, 1);
-
 -- --------------------------------------------------------
 
 --
