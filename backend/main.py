@@ -1,7 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from database import Base, ensure_piece_jointe_column
+from database import (
+    Base,
+    ensure_piece_jointe_column,
+    ensure_intervention_columns,
+    ensure_demandeur_id_nullable,
+    ensure_impact_nullable,
+    ensure_actions_autre_dropped,
+    SessionLocal,
+)
 from database import engine
 from dotenv import load_dotenv
 
@@ -40,6 +48,24 @@ from routers.materiels import router as materiels_router
 
 Base.metadata.create_all(bind=engine)
 ensure_piece_jointe_column()
+ensure_intervention_columns()
+ensure_demandeur_id_nullable()
+ensure_impact_nullable()
+ensure_actions_autre_dropped()
+
+# =========================================================
+# NETTOYAGE DES INTERVENTIONS TERMINÉES DE PLUS D'1 AN
+# =========================================================
+try:
+    from services.intervention_service import cleanup_old_completed_interventions
+
+    _cleanup_db = SessionLocal()
+    try:
+        cleanup_old_completed_interventions(_cleanup_db)
+    finally:
+        _cleanup_db.close()
+except Exception:
+    pass
 
 
 # =========================================================

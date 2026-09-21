@@ -21,8 +21,6 @@ import IntervenantDashboard from "../pages/IntervenantDashboard";
 
 import Interventions from "../pages/Interventions";
 
-import InterventionsAbouties from "../pages/InterventionsAbouties";
-import InterventionsImpossible from "../pages/InterventionsImpossible";
 import InterventionsImprimer from "../pages/InterventionsImprimer";
 
 import MaterielsPage from "../pages/Materiels";
@@ -179,19 +177,6 @@ export default function AppRoutes() {
 
 
         {/* =====================================================
-            ABOUTI
-        ===================================================== */}
-
-        <Route
-          path="/interventions/abouti"
-          element={
-            <ProtectedRoute>
-              <InterventionsAbouties />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* =====================================================
             IMPRIMER
         ===================================================== */}
 
@@ -200,20 +185,6 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <InterventionsImprimer />
-            </ProtectedRoute>
-          }
-        />
-
-
-        {/* =====================================================
-            IMPOSSIBLE
-        ===================================================== */}
-
-        <Route
-          path="/interventions/impossible"
-          element={
-            <ProtectedRoute>
-              <InterventionsImpossible />
             </ProtectedRoute>
           }
         />

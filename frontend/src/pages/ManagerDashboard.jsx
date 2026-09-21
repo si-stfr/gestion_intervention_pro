@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/api";
 import Sidebar from "../components/Sidebar";
+import InterventionsStatusPieChart from "../components/InterventionsStatusPieChart";
+import LieuPopupButton from "../components/LieuPopupButton";
+import ImagePreviewButton from "../components/ImagePreviewButton";
 
 import "../assets/CSS_JS/global.css";
 import "../assets/CSS_JS/Interventions.css";
@@ -33,18 +36,8 @@ export default function ManagerDashboard() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [commentaires, setCommentaires] = useState({});
-    const [attachments, setAttachments] = useState({});
-    const [selectedImage, setSelectedImage] = useState(null);
-    const attachmentRef = useRef({});
 
     const user = JSON.parse(localStorage.getItem("user"));
-
-    const isImageSourceValid = (value) => {
-        if (typeof value !== "string") return false;
-        const trimmed = value.trim();
-        if (!trimmed) return false;
-        return /^data:image\/(png|jpeg|jpg);base64,/.test(trimmed) || /^https?:\/\//i.test(trimmed);
-    };
 
     // ============================
     // FETCH INTERVENTIONS
@@ -96,6 +89,10 @@ export default function ManagerDashboard() {
         item.statut === "EN_ATTENTE_VALIDATION"
     );
 
+    const mesInterventions = interventions.filter(
+        (item) => Number(item.manager_id) === Number(user.id)
+    );
+
     // ============================
     // VALIDATION
     // ============================
@@ -106,75 +103,17 @@ export default function ManagerDashboard() {
 
         if (!confirmSubmit) return;
 
-        const attachment = attachmentRef.current[id] || attachments[id] || interventions.find(item => Number(item.id) === Number(id))?.piece_jointe;
-
-        if (!attachment) {
-            alert("Veuillez joindre une image PNG, JPG ou JPEG avant de valider l'intervention.");
-            return;
-        }
-
         try {
             await api.put(`/intervention/${id}/validate`, {
                 statut,
                 commentaire: commentaires[id] || "",
-                piece_jointe: attachment
             });
 
-            setAttachments(prev => {
-                const next = { ...prev };
-                delete next[id];
-                return next;
-            });
             fetchInterventions();
 
         } catch (err) {
             console.error(err);
-            alert("La validation a échoué. Vérifiez la pièce jointe ou le format de l'image.");
-        }
-    };
-
-    const handleAttachmentChange = (id, file) => {
-        if (!file) return;
-
-        const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-        if (!allowedTypes.includes(file.type)) {
-            alert("Seuls les formats PNG, JPG et JPEG sont autorisés.");
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            const dataUrl = reader.result;
-            attachmentRef.current[id] = dataUrl;
-            setAttachments(prev => ({
-                ...prev,
-                [id]: dataUrl
-            }));
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleDeleteAttachment = async (id) => {
-        const confirmDelete = window.confirm("Supprimer cette image ?");
-        if (!confirmDelete) return;
-
-        try {
-            await api.put(`/intervention/${id}`, {
-                piece_jointe: ""
-            });
-
-            const currentImage = attachments[id] || interventions.find(item => Number(item.id) === Number(id))?.piece_jointe;
-            attachmentRef.current[id] = null;
-            setSelectedImage((current) => (current === currentImage ? null : current));
-            setAttachments(prev => {
-                const next = { ...prev };
-                delete next[id];
-                return next;
-            });
-            fetchInterventions();
-        } catch (err) {
-            console.error(err);
-            alert("La suppression de l'image a échoué.");
+            alert("La validation a échoué.");
         }
     };
 
@@ -208,7 +147,6 @@ export default function ManagerDashboard() {
                                     <th>Matériel concerné</th>
                                     <th>Source de la demande</th>
                                     <th>Urgence</th>
-                                    <th>Impact</th>
                                     <th>Priorité</th>
                                     <th>Date de début</th>
                                     <th>Date d'échéance</th>
@@ -217,7 +155,6 @@ export default function ManagerDashboard() {
                                     <th>Technicien</th>
                                     <th>Diagnostique effectué</th>
                                     <th>Actions réalisées</th>
-                                    <th>Actions autre</th>
                                     <th>Résultat d'intervention</th>
                                     <th>Commentaire</th>
                                     <th>Manager</th>
@@ -242,7 +179,7 @@ export default function ManagerDashboard() {
 
                                         {/* 2 DEMANDEUR */}
                                         <td>
-                                            {users.find(u => Number(u.id) === Number(item.demandeur_id))?.username || "-"}
+                                            {item.demandeur_name || "-"}
                                         </td>
 
                                         {/* 3 TITRE */}
@@ -272,9 +209,6 @@ export default function ManagerDashboard() {
                                         {/* 6 URGENCE */}
                                         <td>{item.urgence}</td>
 
-                                        {/* 7 IMPACT */}
-                                        <td>{item.impact}</td>
-
                                         {/* 8 PRIORITÉ */}
                                         <td>{item.priorite}</td>
 
@@ -289,22 +223,19 @@ export default function ManagerDashboard() {
 
                                         {/* 14 GEO */}
                                         <td>
-                                            {item.lieu}
+                                            <LieuPopupButton lieu={item.lieu} />
                                         </td>
 
                                         {/* 15 TECHNICIEN */}
                                         <td>
-                                            {users.find(u => Number(u.id) === Number(item.technicien_id))?.username || "-"}
+                                            {item.technicien_name || "-"}
                                         </td>
 
                                         {/* 16 DIAGNOSTIC */}
-                                        <td>{item.diagnostique_effectue || "-"}</td> 
+                                        <td>{item.diagnostique_effectue || "-"}</td>
 
                                         {/* 17 ACTIONS */}
                                         <td>{item.actions_realisees || "-"}</td>
-
-                                        {/* 18 AUTRES ACTIONS */}
-                                        <td>{item.actions_autre || "-"}</td>
 
                                         {/* 19 RÉSULTAT */}
                                         <td>{item.resultat_intervention || "-"}</td>
@@ -325,7 +256,7 @@ export default function ManagerDashboard() {
 
                                         {/* 21 MANAGER */}
                                         <td>
-                                            {users.find(u => Number(u.id) === Number(item.manager_id))?.username || "-"}
+                                            {item.manager_name || "-"}
                                         </td>
 
                                         {/* 22 DATE VÉRIFICATION */}
@@ -338,34 +269,14 @@ export default function ManagerDashboard() {
                                                 : "-"}
                                         </td>
 
-                                        {/* 24 PIÈCE JOINTE */}
+                                        {/* 24 PIÈCE JOINTE (fournie par le Technicien, lecture seule) */}
                                         <td>
-                                            {(attachments[item.id] || item.piece_jointe) ? (
+                                            {item.piece_jointe ? (
                                                 <div className="attachment-cell">
-                                                    <button
-                                                        type="button"
-                                                        className="attachment-open-btn"
-                                                        onClick={() => setSelectedImage(attachments[item.id] || item.piece_jointe)}
-                                                    >
-                                                        Ouvrir
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="attachment-delete-btn"
-                                                        onClick={() => handleDeleteAttachment(item.id)}
-                                                    >
-                                                        Supprimer
-                                                    </button>
+                                                    <ImagePreviewButton src={item.piece_jointe} />
                                                 </div>
                                             ) : (
-                                                <label className="attachment-upload">
-                                                    <input
-                                                        type="file"
-                                                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-                                                        onChange={(e) => handleAttachmentChange(item.id, e.target.files?.[0])}
-                                                    />
-                                                    <span>Ajouter</span>
-                                                </label>
+                                                <span className="attachment-empty">Aucune</span>
                                             )}
                                         </td>
 
@@ -399,29 +310,9 @@ export default function ManagerDashboard() {
                     </div>
                 )}
 
-            </div>
+                <InterventionsStatusPieChart interventions={mesInterventions} />
 
-            {selectedImage && isImageSourceValid(selectedImage) && (
-                <div className="attachment-modal-backdrop" onClick={() => setSelectedImage(null)}>
-                    <div className="attachment-modal" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            type="button"
-                            className="attachment-modal-close"
-                            onClick={() => setSelectedImage(null)}
-                        >
-                            ×
-                        </button>
-                        <img
-                            src={selectedImage}
-                            alt="Pièce jointe d'intervention"
-                            onError={(e) => {
-                                e.currentTarget.style.display = "none";
-                                setSelectedImage(null);
-                            }}
-                        />
-                    </div>
-                </div>
-            )}
+            </div>
         </div>
     );
 }

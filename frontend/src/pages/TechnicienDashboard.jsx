@@ -5,6 +5,10 @@ import api from "../api/api";
 import Sidebar from "../components/Sidebar";
 import InterventionCard from "../components/InterventionCard";
 import StatusBadge from "../components/StatusBadge";
+import InterventionsStatusPieChart from "../components/InterventionsStatusPieChart";
+import LieuPopupButton from "../components/LieuPopupButton";
+import ImagePreviewButton from "../components/ImagePreviewButton";
+import { sortInterventions } from "../utils/sortInterventions";
 
 import "../assets/CSS_JS/global.css";
 import "../assets/CSS_JS/Interventions.css";
@@ -65,7 +69,6 @@ export default function TechnicienDashboard() {
       description_de_la_panne: "",
 
       source_demande: "",
-      impact: "",
       priorite: "",
       type_intervention: "",
       type_intervention_autre: "",
@@ -82,11 +85,10 @@ export default function TechnicienDashboard() {
 
       diagnostique_effectue: "",
       actions_realisees: "",
-      actions_autre: "",
       resultat_intervention: "",
+      piece_jointe: "",
 
-      manager_id: "",
-      date_verification: ""
+      manager_id: ""
   });
 
   useEffect(() => {
@@ -136,7 +138,8 @@ export default function TechnicienDashboard() {
   // =========================================
   // FILTER
   // =========================================
-  const filteredInterventions = interventions.filter(
+  const filteredInterventions = sortInterventions(
+    interventions.filter(
       (item) =>
           Number(item.technicien_id) === Number(user.id) &&
           [
@@ -150,6 +153,11 @@ export default function TechnicienDashboard() {
               selectedStatus === "" ||
               item.statut === selectedStatus
           )
+    )
+  );
+
+  const mesInterventions = interventions.filter(
+    (item) => Number(item.technicien_id) === Number(user.id)
   );
 
   const statusClassMap = {
@@ -173,7 +181,6 @@ export default function TechnicienDashboard() {
         description_de_la_panne: "",
 
         source_demande: "",
-        impact: "",
         priorite: "",
         type_intervention: "",
         type_intervention_autre: "",
@@ -190,11 +197,10 @@ export default function TechnicienDashboard() {
 
         diagnostique_effectue: "",
         actions_realisees: "",
-        actions_autre: "",
         resultat_intervention: "",
+        piece_jointe: "",
 
-        manager_id: "",
-        date_verification: ""
+        manager_id: ""
     });
 
     setEditId(null);
@@ -205,9 +211,6 @@ export default function TechnicienDashboard() {
   // =========================================
   const startEdit = (item) => {
 
-    setEditId(item.id);
-
-    console.log("EDIT ID:", item.id);
     setEditId(item.id);
 
     setForm({
@@ -235,15 +238,12 @@ export default function TechnicienDashboard() {
 
       actions_realisees: item.actions_realisees || "",
 
-      actions_autre: item.actions_autre || "",
-
       resultat_intervention: item.resultat_intervention || "",
 
-      manager_id: item.manager_id || "",
+      piece_jointe: item.piece_jointe || "",
 
-      date_verification: item.date_verification ? item.date_verification.split("T")[0] : "",
+      manager_id: item.manager_id || "",
     });
-    console.log("START EDIT ITEM:", item);
   };
 
   // =========================================
@@ -251,7 +251,6 @@ export default function TechnicienDashboard() {
   // =========================================
   const updateIntervention = async () => {
     try {
-      console.log("PAYLOAD", form);
       await api.put(`/intervention/${editId}/technicien`, {
 
         // Le technicien ne choisit pas le statut.
@@ -263,16 +262,9 @@ export default function TechnicienDashboard() {
 
         actions_realisees: form.actions_realisees,
 
-        actions_autre: form.actions_autre,
-
         resultat_intervention: form.resultat_intervention,
 
-        manager_id: form.manager_id
-          ? parseInt(form.manager_id)
-          : null,
-
-        date_verification:
-          form.date_verification || null
+        piece_jointe: form.piece_jointe || null,
       });
 
       fetchInterventions();
@@ -282,6 +274,7 @@ export default function TechnicienDashboard() {
     } catch (err) {
 
       console.error(err);
+      alert(err?.response?.data?.detail || "Erreur lors de la complétion de l'intervention");
     }
   };
 
@@ -314,6 +307,7 @@ export default function TechnicienDashboard() {
 
     } catch (err) {
         console.error(err);
+        alert(err?.response?.data?.detail || "Erreur lors de l'envoi au manager");
     }
  };
 
@@ -410,18 +404,6 @@ export default function TechnicienDashboard() {
                     }
                 />
 
-                {/* 6. AUTRES ACTIONS */}
-                <label>Autres actions</label>
-                <textarea
-                    value={form.actions_autre}
-                    onChange={(e) =>
-                        setForm({
-                            ...form,
-                            actions_autre: e.target.value
-                        })
-                    }
-                />
-
                 {/* 7. RÉSULTAT INTERVENTION */}
                 <label>Résultat de l'intervention</label>
                 <select
@@ -446,25 +428,50 @@ export default function TechnicienDashboard() {
                     </option>
                 </select>
 
-                {/* 8. DATE DE VÉRIFICATION */}
-                <label>Date de complétion</label>
+                {/* 8. PIÈCE JOINTE */}
+                <label>Pièce jointe (photo)</label>
 
-                <input
-                    type="date"
-                    value={form.date_verification}
-                    onChange={(e) =>
-                        setForm({
-                            ...form,
-                            date_verification: e.target.value
-                        })
-                    }
-                />
+                {form.piece_jointe ? (
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <ImagePreviewButton src={form.piece_jointe} />
+                    <button
+                      type="button"
+                      className="attachment-delete-btn"
+                      onClick={() => setForm({ ...form, piece_jointe: "" })}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                ) : (
+                  <label className="attachment-upload">
+                    Ajouter
+                    <input
+                      type="file"
+                      accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
+                          alert("Veuillez sélectionner une image PNG, JPG ou JPEG.");
+                          return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setForm((prev) => ({ ...prev, piece_jointe: reader.result }));
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                )}
 
             </div>
 
             {editId ? (
 
-              <button className="admin-btn" onClick={updateIntervention}>Compléter l'intervention</button>
+              <button className="admin-btn btn-completer" onClick={updateIntervention}>Compléter l'intervention</button>
             ):null}
 
             {editId ? (
@@ -495,7 +502,6 @@ export default function TechnicienDashboard() {
                     <th>Matériel concerné</th>
                     <th>Source de la demande</th>
                     <th>Urgence</th>
-                    <th>Impact</th>
                     <th>Priorité</th>
                     <th>Date début</th>
                     <th>Échéance</th>
@@ -526,10 +532,7 @@ export default function TechnicienDashboard() {
 
                     {/* 2. Demandeur */}
                     <td>
-                        {
-                            users.find(u => Number(u.id) === Number(item.demandeur_id))?.username
-                            || "-"
-                        }
+                        {item.demandeur_name || "-"}
                     </td>
 
                     {/* 3. Titre */}
@@ -559,9 +562,6 @@ export default function TechnicienDashboard() {
                     {/* 6. Urgence */}
                     <td>{item.urgence}</td>
 
-                    {/* 7. Impact */}
-                    <td>{item.impact}</td>
-
                     {/* 8. Priorité */}
                     <td>{item.priorite}</td>
 
@@ -576,7 +576,7 @@ export default function TechnicienDashboard() {
 
                     {/* 14. Géolocalisation */}
                     <td>
-                        {item.lieu}
+                        <LieuPopupButton lieu={item.lieu} />
                     </td>
 
                     {/* 16. Technicien */}
@@ -646,6 +646,8 @@ export default function TechnicienDashboard() {
 
           </div>
         )}
+
+        <InterventionsStatusPieChart interventions={mesInterventions} />
 
       </div>
 

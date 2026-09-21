@@ -62,7 +62,7 @@ export default function InterventionsImprimer() {
 
     useEffect(() => {
         if (!titre || !typeIntervention) {
-            navigate("/interventions/abouti");
+            navigate("/interventions");
             return;
         }
         fetchInterventions();
@@ -77,7 +77,7 @@ export default function InterventionsImprimer() {
         return (
             <div className="no-data">
                 <p>Aucune intervention trouvée</p>
-                <button onClick={() => navigate("/interventions/abouti")}>
+                <button onClick={() => navigate("/interventions")}>
                     Retour
                 </button>
             </div>
@@ -102,10 +102,9 @@ export default function InterventionsImprimer() {
     // RÉCUPÉRER LES DEMANDEURS UNIQUES
     // ============================
     const getUniqueDemandeurs = () => {
-        const demandeurIds = [...new Set(interventions.map(i => i.demandeur_id))];
-        return demandeurIds
-            .map(id => users.find(u => Number(u.id) === Number(id))?.username || "-")
-            .filter(name => name !== "-");
+        return [...new Set(
+            interventions.map(i => i.demandeur_name).filter(Boolean)
+        )];
     };
 
     const uniqueDemandeurs = getUniqueDemandeurs();
@@ -269,7 +268,7 @@ export default function InterventionsImprimer() {
                 </button>
                 <button 
                     className="btn-retour"
-                    onClick={() => navigate("/interventions/abouti")}
+                    onClick={() => navigate("/interventions")}
                 >
                     Retour
                 </button>

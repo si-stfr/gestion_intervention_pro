@@ -71,6 +71,94 @@ def ensure_piece_jointe_column():
             pass
 
 
+def ensure_intervention_columns():
+    """Ajoute les colonnes récentes du modèle Intervention si elles manquent encore."""
+    if not DATABASE_URL:
+        return
+
+    columns_to_add = {
+        "cree_par_id": "INT NULL",
+        "demandeur_nom": "VARCHAR(255) NULL",
+        "latitude": "FLOAT NULL",
+        "longitude": "FLOAT NULL",
+    }
+
+    with engine.begin() as conn:
+        for column_name, ddl_type in columns_to_add.items():
+            try:
+                exists = conn.execute(
+                    text(
+                        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = :col"
+                    ),
+                    {"col": column_name},
+                ).scalar()
+                if not exists:
+                    conn.execute(
+                        text(f"ALTER TABLE interventions ADD COLUMN {column_name} {ddl_type}")
+                    )
+            except Exception:
+                pass
+
+
+def ensure_demandeur_id_nullable():
+    """demandeur_id n'est plus renseigné à la création (remplacé par demandeur_nom texte libre)."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        try:
+            is_nullable = conn.execute(
+                text(
+                    "SELECT IS_NULLABLE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'demandeur_id'"
+                )
+            ).scalar()
+            if is_nullable == "NO":
+                conn.execute(
+                    text("ALTER TABLE interventions MODIFY COLUMN demandeur_id INT NULL")
+                )
+        except Exception:
+            pass
+
+
+def ensure_impact_nullable():
+    """impact n'est plus renseigné par les formulaires (retiré de l'UI) mais reste en base."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        try:
+            is_nullable = conn.execute(
+                text(
+                    "SELECT IS_NULLABLE, COLUMN_TYPE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'impact'"
+                )
+            ).first()
+            if is_nullable and is_nullable[0] == "NO":
+                column_type = is_nullable[1]
+                conn.execute(
+                    text(f"ALTER TABLE interventions MODIFY COLUMN impact {column_type} NULL")
+                )
+        except Exception:
+            pass
+
+
+def ensure_actions_autre_dropped():
+    """Supprime la colonne actions_autre, devenue inutile (remplacée par actions_realisees)."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        try:
+            exists = conn.execute(
+                text(
+                    "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'actions_autre'"
+                )
+            ).scalar()
+            if exists:
+                conn.execute(text("ALTER TABLE interventions DROP COLUMN actions_autre"))
+        except Exception:
+            pass
+
+
 # =========================================================
 # SESSION
 # =========================================================

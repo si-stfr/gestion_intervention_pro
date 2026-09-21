@@ -20,6 +20,8 @@ from services.intervention_service import (
     compute_statut,
     send_to_manager,
     validate_intervention,
+    normalize_piece_jointe,
+    cleanup_old_completed_interventions,
 )
 
 router = APIRouter(prefix="/intervention", tags=["Intervention"])
@@ -30,6 +32,8 @@ router = APIRouter(prefix="/intervention", tags=["Intervention"])
 # =========================================================
 @router.get("/")
 def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
+
+    cleanup_old_completed_interventions(db)
 
     interventions = db.query(Intervention).all()
 
@@ -66,6 +70,8 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # IDS
                 # =========================
                 "demandeur_id": i.demandeur_id,
+                "demandeur_nom": i.demandeur_nom,
+                "cree_par_id": i.cree_par_id,
                 "technicien_id": i.technicien_id,
                 "manager_id": i.manager_id,
                 # =========================
@@ -100,13 +106,14 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # LOCALISATION
                 # =========================
                 "lieu": i.lieu,
+                "latitude": i.latitude,
+                "longitude": i.longitude,
                 "commentaire": i.commentaire,
                 # =========================
                 # COMPLETION TECHNICIEN
                 # =========================
                 "diagnostique_effectue": i.diagnostique_effectue,
                 "actions_realisees": i.actions_realisees,
-                "actions_autre": i.actions_autre,
                 "resultat_intervention": i.resultat_intervention,
                 # =========================
                 # META
@@ -116,7 +123,7 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # =========================
                 # RELATIONS (DISPLAY ONLY)
                 # =========================
-                "demandeur_name": i.demandeur.username if i.demandeur else None,
+                "demandeur_name": i.demandeur_nom or (i.demandeur.username if i.demandeur else None),
                 "technicien_name": i.technicien.username if i.technicien else None,
                 "manager_name": i.manager.username if i.manager else None,
                 "materiels": [
@@ -203,6 +210,10 @@ def create(data: dict, db: Session = Depends(get_db), user=Depends(get_current_u
     if user.profil.value not in ["ADMIN", "INTERVENANT"]:
         raise HTTPException(status_code=403)
 
+    # l'utilisateur connecté devient le propriétaire technique de la fiche
+    # (indépendant du "Demandeur" texte libre saisi dans le formulaire)
+    data["cree_par_id"] = user.id
+
     # création via service
     intervention = create_intervention(db, data)
 
@@ -229,7 +240,23 @@ def update(
 
     update_data = data.model_dump(exclude_unset=True, exclude_none=True)
 
-    return update_intervention(db, intervention, update_data)
+    # Une intervention "En attente de validation" doit toujours avoir un manager
+    # assigné, sinon elle reste invisible/inaccessible pour tout manager.
+    resulting_statut = update_data.get("statut", intervention.statut)
+    resulting_statut = (
+        resulting_statut.value if hasattr(resulting_statut, "value") else resulting_statut
+    )
+    resulting_manager_id = update_data.get("manager_id", intervention.manager_id)
+    if resulting_statut == "EN_ATTENTE_VALIDATION" and not resulting_manager_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Un manager doit être assigné pour mettre une intervention en attente de validation",
+        )
+
+    try:
+        return update_intervention(db, intervention, update_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.put("/{id}/technicien")
@@ -257,10 +284,16 @@ def update_technicien(
             value.value if isinstance(value, ResultatIntervention) else value
         )
 
-    return update_intervention(db, intervention, update_data)
+    try:
+        return update_intervention(db, intervention, update_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 def update_intervention(db, intervention, update_data):
+    if update_data.get("piece_jointe"):
+        update_data["piece_jointe"] = normalize_piece_jointe(update_data["piece_jointe"])
+
     for key, value in update_data.items():
         setattr(intervention, key, value)
 
@@ -315,9 +348,12 @@ def send_manager(
     if intervention.technicien_id != user.id:
         raise HTTPException(status_code=403)
 
-    return send_to_manager(
-        db, intervention, data["manager_id"], data["date_verification"]
-    )
+    try:
+        return send_to_manager(
+            db, intervention, data["manager_id"], data["date_verification"]
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # =========================================================
@@ -372,8 +408,8 @@ def delete(id: int, db: Session = Depends(get_db), user=Depends(get_current_user
         raise HTTPException(status_code=403)
 
     # un intervenant ne peut supprimer
-    # que ses propres interventions
-    if user.profil.value == "INTERVENANT" and intervention.demandeur_id != user.id:
+    # que les interventions qu'il a lui-même créées
+    if user.profil.value == "INTERVENANT" and intervention.cree_par_id != user.id:
         raise HTTPException(status_code=403)
 
     # =========================================

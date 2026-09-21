@@ -90,6 +90,7 @@ class InterventionTechnicienUpdate(BaseModel):
 
     date_verification: Optional[date] = None
     resultat_intervention: Optional[ResultatIntervention] = None
+    piece_jointe: Optional[str] = None
 
 
 # =========================================================
@@ -168,7 +169,19 @@ class InterventionUpdate(BaseModel):
     date_fin: Optional[str] = None
 
     lieu: str | None = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     piece_jointe: Optional[str] = None
+
+    demandeur_nom: Optional[str] = None
+
+    # champs technicien / manager (édition admin sur une intervention en cours)
+    diagnostique_effectue: Optional[str] = None
+    actions_realisees: Optional[str] = None
+    resultat_intervention: Optional[str] = None
+    commentaire: Optional[str] = None
+    manager_id: Optional[int] = None
+    date_verification: Optional[date] = None
 
     class Config:
         from_attributes = True

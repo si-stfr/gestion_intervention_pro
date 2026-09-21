@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import api from "../api/api";
 
 import Sidebar from "../components/Sidebar";
+import LieuMapPicker from "../components/LieuMapPicker";
+import InterventionsStatusPieChart from "../components/InterventionsStatusPieChart";
+import LieuPopupButton from "../components/LieuPopupButton";
+import { sortInterventions } from "../utils/sortInterventions";
 
 import "../assets/CSS_JS/global.css";
 import "../assets/CSS_JS/Interventions.css";
@@ -54,6 +58,7 @@ export default function IntervenantDashboard() {
   const [rechercheMateriel, setRechercheMateriel] = useState("");
 
   const [editId, setEditId] = useState(null);
+  const [showMaterielDropdown, setShowMaterielDropdown] = useState(false);
 
   const techniciens = users.filter(
     (u) => u.profil === "TECHNICIEN"
@@ -62,7 +67,7 @@ export default function IntervenantDashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [form, setForm] = useState({
-    demandeur_id: user?.id || "",
+    demandeur_nom: user?.username || "",
 
     titre: "",
 
@@ -71,8 +76,6 @@ export default function IntervenantDashboard() {
     statut: "SIGNALE",
 
     source_demande: "Direct",
-
-    impact: "Très haut",
 
     priorite: "Majeure",
 
@@ -87,6 +90,8 @@ export default function IntervenantDashboard() {
     date_fin: "",
 
     lieu: "",
+    latitude: null,
+    longitude: null,
 
     urgence: "Moyenne",
 
@@ -168,19 +173,25 @@ export default function IntervenantDashboard() {
   // =========================================
   // FILTER
   // =========================================
-  const filteredInterventions = (interventions ?? []).filter(
-    (item) =>
-      Number(item.demandeur_id) === Number(user.id) &&
-      [
-        "SIGNALE",
-        "EN_COURS",
-        "EN_RETARD",
-        "EN_ATTENTE_VALIDATION"
-      ].includes(item.statut) &&
-      (
-        selectedStatus === "" ||
-        item.statut === selectedStatus
-      )
+  const filteredInterventions = sortInterventions(
+    (interventions ?? []).filter(
+      (item) =>
+        Number(item.cree_par_id) === Number(user.id) &&
+        [
+          "SIGNALE",
+          "EN_COURS",
+          "EN_RETARD",
+          "EN_ATTENTE_VALIDATION"
+        ].includes(item.statut) &&
+        (
+          selectedStatus === "" ||
+          item.statut === selectedStatus
+        )
+    )
+  );
+
+  const mesInterventions = (interventions ?? []).filter(
+    (item) => Number(item.cree_par_id) === Number(user.id)
   );
 
   const statusClassMap = {
@@ -198,7 +209,7 @@ export default function IntervenantDashboard() {
 
     setForm({
 
-      demandeur_id: user?.id || "",
+      demandeur_nom: user?.username || "",
 
       titre: "",
 
@@ -207,8 +218,6 @@ export default function IntervenantDashboard() {
       statut: "SIGNALE",
 
       source_demande: "Direct",
-
-      impact: "Très haut",
 
       priorite: "Majeure",
 
@@ -223,6 +232,8 @@ export default function IntervenantDashboard() {
       date_fin: "",
 
       lieu: "",
+      latitude: null,
+      longitude: null,
 
       urgence: "Moyenne",
 
@@ -230,6 +241,7 @@ export default function IntervenantDashboard() {
     });
     setMaterielsSelectionnes([]);
     setRechercheMateriel("");
+    setShowMaterielDropdown(false);
     setEditId(null);
   };
 
@@ -238,8 +250,8 @@ export default function IntervenantDashboard() {
   // =========================================
   const addIntervention = async () => {
 
-    if (!form.demandeur_id) {
-        alert("Veuillez choisir un demandeur");
+    if (!form.demandeur_nom) {
+        alert("Veuillez saisir un demandeur");
         return;
         }
 
@@ -254,12 +266,12 @@ export default function IntervenantDashboard() {
         }
 
     if (!form.date_debut) {
-        alert("Veuillez saisir une date de livraison");
+        alert("Veuillez saisir une date de début");
         return;
         }
 
     if (!form.date_fin) {
-        alert("Veuillez saisir une date de récupération");
+        alert("Veuillez saisir une date de fin");
         return;
         }
 
@@ -284,8 +296,6 @@ export default function IntervenantDashboard() {
 
         ...form,
 
-        demandeur_id: Number(user.id),
-
         technicien_id:
           form.technicien_id === ""
             ? null
@@ -298,9 +308,6 @@ export default function IntervenantDashboard() {
 
          source_demande:
             form.source_demande === "" ? null : form.source_demande,
-
-          impact:
-            form.impact === "" ? null : form.impact,
 
           priorite:
             form.priorite === "" ? null : form.priorite,
@@ -354,9 +361,11 @@ export default function IntervenantDashboard() {
 
     setEditId(item.id);
 
+    setShowMaterielDropdown(false);
+
     setForm({
 
-      demandeur_id: item.demandeur_id || "",
+      demandeur_nom: item.demandeur_name || user?.username || "",
 
       titre: item.titre || "",
 
@@ -366,8 +375,6 @@ export default function IntervenantDashboard() {
       statut: item.statut || "SIGNALE",
 
       source_demande: item.source_demande || "Direct",
-
-      impact: item.impact || "Très haut",
 
       priorite: item.priorite || "Majeure",
 
@@ -393,6 +400,8 @@ export default function IntervenantDashboard() {
           : "",
 
       lieu: item.lieu || "",
+      latitude: item.latitude ?? null,
+      longitude: item.longitude ?? null,
 
       urgence: item.urgence || "Moyenne",
 
@@ -411,8 +420,6 @@ export default function IntervenantDashboard() {
       await api.put(`/intervention/${editId}`, {
 
         ...form,
-
-        demandeur_id: Number(user.id),
 
         technicien_id:
           form.technicien_id === ""
@@ -518,6 +525,19 @@ export default function IntervenantDashboard() {
 
             </select>
 
+            {/* DEMANDEUR */}
+            <label>Demandeur</label>
+            <input
+              placeholder="Nom du demandeur"
+              value={form.demandeur_nom}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  demandeur_nom: e.target.value
+                })
+              }
+            />
+
             {/* TITRE */}
             <input
               placeholder="Titre"
@@ -604,25 +624,6 @@ export default function IntervenantDashboard() {
               <option>Très basse</option>
             </select>
 
-            {/* IMPACT */}
-            <label>Impact</label>
-
-            <select
-              value={form.impact}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  impact: e.target.value
-                })
-              }
-            >
-              <option>Très haut</option>
-              <option>Haut</option>
-              <option>Moyen</option>
-              <option>Bas</option>
-              <option>Très bas</option>
-            </select>
-
             {/* PRIORITE */}
             <label>Priorité</label>
 
@@ -682,119 +683,127 @@ export default function IntervenantDashboard() {
 
              {/*SELECTION MATERIEL*/}
 
-                <label className="mat-select">
-                  - -  Sélectionnez le(s) matériel(s) concerné(s)  - -
-                </label>
+                <button
+                  type="button"
+                  className="mat-select-toggle"
+                  onClick={() => setShowMaterielDropdown(v => !v)}
+                >
+                  {showMaterielDropdown ? "▲" : "▼"} Sélectionnez le(s) matériel(s) concerné(s) (Facultatif)
+                </button>
 
-                <input
-                  type="text"
-                  value={rechercheMateriel}
-                  onChange={(e) =>
-                    setRechercheMateriel(e.target.value)
-                  }
-                  placeholder="Rechercher un matériel..."
-                />
+              {/* MATERIELS SELECTIONNES (toujours visibles si non vide) */}
 
+                {materielsSelectionnes.length > 0 && (
+                  <div className="materiels-selectionnes">
 
-              {/* MATERIELS SELECTIONNES */}  
-
-                <div className="materiels-selectionnes">
-
-                {materielsSelectionnes.map((m) => (
-
-                  <div
-                    key={m.id}
-                    className="materiel-chip"
-                  >
-                    <input
-                        className="quantite"
-                        type="number"
-                        min="1"
-                        value={m.quantiteDemande ?? 1}
-                        onChange={(e) => {
-                          const valeur = Math.max(1, Number(e.target.value) || 1);
-
-                          setMaterielsSelectionnes(prev =>
-                            prev.map(mat =>
-                              mat.id === m.id
-                                ? { ...mat, quantiteDemande: valeur }
-                                : mat
-                            )
-                          );
-                        }}
-                      />
-
-                    <div>{m.marque_ou_modele}</div>
-                    <div>{m.numero_de_serie}</div>
-                    <div>{m.statut}</div>
-                    <div>{m.lieu_stockage}</div>
-                    <div>
-                    <button
-                      type="button"
-                      className="btn-desel"
-                      onClick={() =>
-
-                        setMaterielsSelectionnes(
-                          materielsSelectionnes.filter(
-                            item => item.id !== m.id
-                          )
-                        )
-
-                      }
-                    >
-                      ✕
-                    </button>
-                      </div>
-                  </div>
-                ))}
-              </div>
-
-
-              {/* LISTE DES RESULTATS */}  
-
-                <div className="materiels-search-results">
-
-                <div className="materiels-categ">
-                  <div>Nom/Marque/Modèle</div>
-                  <div>N° identification</div>
-                  <div>Statut</div>
-                  <div>Emplacement</div>
-                </div>
-
-                  {materielsFiltres.map((m) => (
+                  {materielsSelectionnes.map((m) => (
 
                     <div
                       key={m.id}
-                      className="materiel-result"
-                      onClick={() => {
+                      className="materiel-chip"
+                    >
+                      <input
+                          className="quantite"
+                          type="number"
+                          min="1"
+                          value={m.quantiteDemande ?? 1}
+                          onChange={(e) => {
+                            const valeur = Math.max(1, Number(e.target.value) || 1);
 
-                        const dejaPresent =
-                          materielsSelectionnes.some(
-                            item => item.id === m.id
-                          );
+                            setMaterielsSelectionnes(prev =>
+                              prev.map(mat =>
+                                mat.id === m.id
+                                  ? { ...mat, quantiteDemande: valeur }
+                                  : mat
+                              )
+                            );
+                          }}
+                        />
 
-                        if (!dejaPresent) {
-                          setMaterielsSelectionnes([
-                            ...materielsSelectionnes,
-                            {
-                            ...m,
-                            quantiteDemande:1
-                            }
-                          ]);
-                        }
-                      }}
-                    > 
                       <div>{m.marque_ou_modele}</div>
                       <div>{m.numero_de_serie}</div>
                       <div>{m.statut}</div>
                       <div>{m.lieu_stockage}</div>
+                      <div>
+                      <button
+                        type="button"
+                        className="btn-desel"
+                        onClick={() =>
 
+                          setMaterielsSelectionnes(
+                            materielsSelectionnes.filter(
+                              item => item.id !== m.id
+                            )
+                          )
+
+                        }
+                      >
+                        ✕
+                      </button>
+                        </div>
                     </div>
                   ))}
                 </div>
+                )}
+
+              {showMaterielDropdown && (
+                <>
+                  <input
+                    type="text"
+                    value={rechercheMateriel}
+                    onChange={(e) =>
+                      setRechercheMateriel(e.target.value)
+                    }
+                    placeholder="Rechercher un matériel..."
+                  />
+
+                  {/* LISTE DES RESULTATS */}
+
+                  <div className="materiels-search-results">
+
+                  <div className="materiels-categ">
+                    <div>Nom/Marque/Modèle</div>
+                    <div>N° identification</div>
+                    <div>Statut</div>
+                    <div>Emplacement</div>
+                  </div>
+
+                    {materielsFiltres.map((m) => (
+
+                      <div
+                        key={m.id}
+                        className="materiel-result"
+                        onClick={() => {
+
+                          const dejaPresent =
+                            materielsSelectionnes.some(
+                              item => item.id === m.id
+                            );
+
+                          if (!dejaPresent) {
+                            setMaterielsSelectionnes([
+                              ...materielsSelectionnes,
+                              {
+                              ...m,
+                              quantiteDemande:1
+                              }
+                            ]);
+                          }
+                        }}
+                      >
+                        <div>{m.marque_ou_modele}</div>
+                        <div>{m.numero_de_serie}</div>
+                        <div>{m.statut}</div>
+                        <div>{m.lieu_stockage}</div>
+
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
             {/* DATE DEBUT */}
-            <label>Date de livraison</label>
+            <label>Date de début</label>
 
             <input
               type="date"
@@ -822,7 +831,7 @@ export default function IntervenantDashboard() {
             />
 
             {/* DATE FIN */}
-            <label>Date de récupération</label>
+            <label>Date de fin</label>
 
             <input
               type="date"
@@ -837,13 +846,14 @@ export default function IntervenantDashboard() {
 
             {/* LIEU */}
             <label>Lieu</label>
-             <input
-              placeholder="Lieu de l'intervention"
-              value={form.lieu}
-              onChange={(e) =>
+            <LieuMapPicker
+              value={{ lieu: form.lieu, latitude: form.latitude, longitude: form.longitude }}
+              onChange={(next) =>
                 setForm({
                   ...form,
-                  lieu: e.target.value
+                  lieu: next.lieu,
+                  latitude: next.latitude,
+                  longitude: next.longitude,
                 })
               }
             />
@@ -920,11 +930,10 @@ export default function IntervenantDashboard() {
                   <th>Matériel concerné</th>
                   <th>Source</th>
                   <th>Urgence</th>
-                  <th>Impact</th>
                   <th>Priorité</th>
-                  <th>Date de livraison</th>
+                  <th>Date de début</th>
                   <th>Échéance</th>
-                  <th>Date de récupération</th>
+                  <th>Date de fin</th>
                   <th>Lieu</th>
                   <th>Technicien</th>
                   <th>Créé le</th>
@@ -958,13 +967,7 @@ export default function IntervenantDashboard() {
 
                     {/* DEMANDEUR */}
                     <td>
-                      {
-                        users.find(
-                          (u) =>
-                            Number(u.id) ===
-                            Number(item.demandeur_id)
-                        )?.username || "-"
-                      }
+                      {item.demandeur_name || "-"}
                     </td>
 
                     {/* TITRE */}
@@ -1005,9 +1008,6 @@ export default function IntervenantDashboard() {
                     {/* URGENCE */}
                     <td>{item.urgence}</td>
 
-                    {/* IMPACT */}
-                    <td>{item.impact}</td>
-
                     {/* PRIORITE */}
                     <td>{item.priorite}</td>
 
@@ -1022,7 +1022,7 @@ export default function IntervenantDashboard() {
 
                     {/* GEOLOCALISATION */}
                     <td>
-                      {item.lieu}
+                      <LieuPopupButton lieu={item.lieu} />
                     </td>
 
                     {/* TECHNICIEN */}
@@ -1085,6 +1085,8 @@ export default function IntervenantDashboard() {
           </div>
 
         )}
+
+        <InterventionsStatusPieChart interventions={mesInterventions} />
 
       </div>
 

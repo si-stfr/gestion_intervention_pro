@@ -1,6 +1,6 @@
 import base64
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from sqlalchemy.orm import Session
 
 from models.intervention import Intervention, StatutIntervention
@@ -212,6 +212,9 @@ def validate_intervention(
 
     intervention.statut = StatutIntervention(statut)
 
+    # Date de complétion : toujours la date du jour, non modifiable par le Manager.
+    intervention.date_verification = date.today()
+
     if commentaire:
         intervention.commentaire = commentaire
 
@@ -338,6 +341,29 @@ def update_intervention(db: Session, intervention: Intervention, data: dict):
     db.refresh(intervention)
 
     return intervention
+
+
+# =========================================================
+# SUPPRESSION AUTOMATIQUE DES INTERVENTIONS TERMINÉES (> 1 AN)
+# =========================================================
+def cleanup_old_completed_interventions(db: Session):
+    cutoff = date.today() - timedelta(days=365)
+
+    old_interventions = (
+        db.query(Intervention)
+        .filter(Intervention.statut == StatutIntervention.ABOUTI)
+        .all()
+    )
+
+    for intervention in old_interventions:
+        reference_date = intervention.date_verification or (
+            intervention.created_at.date() if intervention.created_at else None
+        )
+
+        if reference_date and reference_date < cutoff:
+            db.delete(intervention)
+
+    db.commit()
 
 
 # =========================================================

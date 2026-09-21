@@ -97,6 +97,11 @@ class Intervention(Base):
     technicien_id = Column(Integer, ForeignKey("users.id"))
     manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
+    # utilisateur connecté ayant créé la fiche (sert aux permissions de suppression)
+    cree_par_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # nom du demandeur en texte libre (n'est pas forcément un compte du système)
+    demandeur_nom = Column(String(255), nullable=True)
+
     titre = Column(String(255), nullable=False)
 
     description_de_la_panne = Column(String(500))
@@ -131,12 +136,12 @@ class Intervention(Base):
     date_fin = Column(Date)
 
     lieu = Column(String(255))
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     diagnostique_effectue = Column(String(500))
 
     actions_realisees = Column(String(500))
-
-    actions_autre = Column(String(255))
 
     resultat_intervention = Column(
         Enum(ResultatIntervention, values_callable=lambda obj: [e.value for e in obj]),
@@ -160,6 +165,8 @@ class Intervention(Base):
     technicien = relationship("User", foreign_keys=[technicien_id])
 
     manager = relationship("User", foreign_keys=[manager_id])
+
+    cree_par = relationship("User", foreign_keys=[cree_par_id])
 
     materiels = relationship(
         "Materiel", secondary=intervention_materiel, back_populates="interventions"

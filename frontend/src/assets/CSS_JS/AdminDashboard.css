@@ -543,3 +543,138 @@ textarea {
   background: rgba(33, 230, 33, 0.799);
   border:2px solid transparent
 }
+
+/* =========================
+   BOUTON IMPRIMER
+========================= */
+.actions-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.actions-buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  background: white;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.btn-imprimer {
+  border: 2px solid #0074c7 !important;
+  color: #0074c7;
+  margin-right: 5px;
+}
+
+.btn-imprimer:hover {
+  background: #0074c7;
+  color: white;
+}
+
+/* =========================
+   POPUPS LIEU / PIÈCE JOINTE
+========================= */
+.attachment-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-width: 90px;
+  flex-wrap: wrap;
+}
+
+.attachment-open-btn,
+.attachment-delete-btn,
+.attachment-modal-close {
+  border: none;
+  border-radius: 8px;
+  background: #0074c7;
+  color: white;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.attachment-open-btn:hover,
+.attachment-delete-btn:hover,
+.attachment-modal-close:hover {
+  background: #005d9f;
+}
+
+.attachment-delete-btn {
+  background: #c62828;
+}
+
+.attachment-delete-btn:hover {
+  background: #a81d1d;
+}
+
+.attachment-empty {
+  color: #777;
+  font-style: italic;
+}
+
+.attachment-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.attachment-modal {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 18px 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.attachment-modal img {
+  display: block;
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.text-modal-content {
+  max-width: 60vw;
+  max-height: 70vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  margin: 10px 30px 0 0;
+  font-size: 1rem;
+  color: #222;
+}
+
+.attachment-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+}

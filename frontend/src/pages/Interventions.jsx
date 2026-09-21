@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import api from "../api/api";
 
 import Sidebar from "../components/Sidebar";
+import LieuMapPicker from "../components/LieuMapPicker";
+import LieuPopupButton from "../components/LieuPopupButton";
+import { sortInterventions } from "../utils/sortInterventions";
 
 import "../assets/CSS_JS/global.css";
 import "../assets/CSS_JS/Interventions.css";
+
+const STATUTS_AVEC_SUIVI = ["EN_COURS", "EN_RETARD", "EN_ATTENTE_VALIDATION"];
 
 const statutLabels = {
   SIGNALE: "Demande",
@@ -40,6 +46,8 @@ const normalizeStatut = (statut) => {
 
 export default function Interventions() {
 
+  const navigate = useNavigate();
+
   const [interventions, setInterventions] = useState([]);
   const [materiels, setMateriels] = useState([]);
   const [users, setUsers] = useState([]);
@@ -49,8 +57,12 @@ export default function Interventions() {
   const [editId, setEditId] = useState(null);
   const [materielsSelectionnes, setMaterielsSelectionnes] = useState([]);
   const [rechercheMateriel, setRechercheMateriel] = useState("");
+  const [showMaterielDropdown, setShowMaterielDropdown] = useState(false);
   const techniciens = users.filter(
     (u) => u.profil === "TECHNICIEN"
+  );
+  const managers = users.filter(
+    (u) => u.profil === "MANAGER"
   );
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -58,13 +70,12 @@ export default function Interventions() {
   const isAdmin = user?.profil === "ADMIN";
 
   const [form, setForm] = useState({
-    demandeur_id: "",
+    demandeur_nom: "",
     titre: "",
     description_de_la_panne: "",
     statut: "SIGNALE",
 
     source_demande: "Direct",
-    impact: "Très haut",
     priorite: "Majeure",
     type_intervention: "Livraison",
     type_intervention_autre: "",
@@ -74,9 +85,19 @@ export default function Interventions() {
     date_fin: "",
 
     lieu: "",
+    latitude: null,
+    longitude: null,
 
     urgence: "Haute",
-    technicien_id: ""
+    technicien_id: "",
+
+    // suivi technicien / manager (visible uniquement en édition d'une
+    // intervention EN_COURS / EN_RETARD / EN_ATTENTE_VALIDATION)
+    diagnostique_effectue: "",
+    actions_realisees: "",
+    resultat_intervention: "",
+    commentaire: "",
+    manager_id: "",
   });
 
   useEffect(() => {
@@ -144,20 +165,12 @@ export default function Interventions() {
   };
 
   // =========================================
-  // FILTER
+  // FILTER + TRI
   // =========================================
-  const filteredInterventions = (interventions ?? []).filter(
-    (item) =>
-      [
-        "SIGNALE",
-        "EN_COURS",
-        "EN_RETARD",
-        "EN_ATTENTE_VALIDATION",
-      ].includes(item.statut) &&
-      (
-        selectedStatus === "" ||
-        item.statut === selectedStatus
-      )
+  const filteredInterventions = sortInterventions(
+    (interventions ?? []).filter(
+      (item) => selectedStatus === "" || item.statut === selectedStatus
+    )
   );
 
 
@@ -185,14 +198,13 @@ export default function Interventions() {
   const resetForm = () => {
 
     setForm({
-      demandeur_id: "",
+      demandeur_nom: "",
       titre: "",
       description_de_la_panne: "",
 
       statut: "SIGNALE",
 
       source_demande: "Direct",
-      impact: "Très haut",
       priorite: "Majeure",
       type_intervention: "Livraison",
       type_intervention_autre: "",
@@ -202,13 +214,22 @@ export default function Interventions() {
       date_fin: "",
 
       lieu: "",
+      latitude: null,
+      longitude: null,
 
       urgence: "Moyenne",
 
-      technicien_id: ""
+      technicien_id: "",
+
+      diagnostique_effectue: "",
+      actions_realisees: "",
+      resultat_intervention: "",
+      commentaire: "",
+      manager_id: "",
     });
     setMaterielsSelectionnes([]);
     setRechercheMateriel("");
+    setShowMaterielDropdown(false);
     setEditId(null);
   };
 
@@ -217,8 +238,8 @@ export default function Interventions() {
   // =========================================
   const addIntervention = async () => {
 
-    if (!form.demandeur_id) {
-        alert("Veuillez choisir un demandeur");
+    if (!form.demandeur_nom) {
+        alert("Veuillez saisir un demandeur");
         return;
         }
 
@@ -233,12 +254,12 @@ export default function Interventions() {
         }
 
     if (!form.date_debut) {
-        alert("Veuillez saisir une date de livraison");
+        alert("Veuillez saisir une date de début");
         return;
         }
 
     if (!form.date_fin) {
-        alert("Veuillez saisir une date de récupération");
+        alert("Veuillez saisir une date de fin");
         return;
         }
 
@@ -259,11 +280,19 @@ export default function Interventions() {
 
     try {
 
+      // les champs de suivi technicien/manager n'ont de sens qu'en édition
+      const {
+        diagnostique_effectue,
+        actions_realisees,
+        resultat_intervention,
+        commentaire,
+        manager_id,
+        ...createForm
+      } = form;
+
       await api.post("/intervention/", {
 
-        ...form,
-
-        demandeur_id: parseInt(form.demandeur_id),
+        ...createForm,
 
         technicien_id:
           form.technicien_id === ""
@@ -273,22 +302,19 @@ export default function Interventions() {
           source_demande:
             form.source_demande === "" ? null : form.source_demande,
 
-          impact:
-            form.impact === "" ? null : form.impact,
-
           priorite:
             form.priorite === "" ? null : form.priorite,
 
           type_intervention:
             form.type_intervention === "" ? null : form.type_intervention,
-          
+
           materiels: materielsSelectionnes.map(m => ({
                 id :m.id,
                 quantite : m.quantiteDemande
-          
+
       }))
-      
-      },console.log("materiels selectionne :", materielsSelectionnes));
+
+      });
 
       fetchInterventions();
 
@@ -327,10 +353,11 @@ export default function Interventions() {
   const startEdit = (item) => {
 
     setEditId(item.id);
+    setShowMaterielDropdown(false);
 
     setForm({
 
-      demandeur_id: item.demandeur_id ?? "",
+      demandeur_nom: item.demandeur_name ?? "",
 
       titre: item.titre ?? "",
 
@@ -340,8 +367,6 @@ export default function Interventions() {
       statut: item.statut ?? "SIGNALE",
 
       source_demande: item.source_demande ?? "",
-
-      impact: item.impact ?? "",
 
       priorite: item.priorite ?? "",
 
@@ -367,10 +392,18 @@ export default function Interventions() {
           : "",
 
       lieu: item.lieu ?? "",
+      latitude: item.latitude ?? null,
+      longitude: item.longitude ?? null,
 
       urgence: item.urgence || "Moyenne",
 
-      technicien_id: item.technicien_id ? Number(item.technicien_id) : ""
+      technicien_id: item.technicien_id ? Number(item.technicien_id) : "",
+
+      diagnostique_effectue: item.diagnostique_effectue ?? "",
+      actions_realisees: item.actions_realisees ?? "",
+      resultat_intervention: item.resultat_intervention ?? "",
+      commentaire: item.commentaire ?? "",
+      manager_id: item.manager_id ? Number(item.manager_id) : "",
     });
   };
 
@@ -379,21 +412,23 @@ export default function Interventions() {
   // =========================================
   const updateIntervention = async () => {
 
+    if (form.statut === "EN_ATTENTE_VALIDATION" && !form.manager_id) {
+      alert("Veuillez choisir un manager avant de mettre l'intervention en attente de validation");
+      return;
+    }
+
     try {
 
       await api.put(`/intervention/${editId}`, {
 
         ...form,
 
-        demandeur_id: Number(form.demandeur_id),
-
         technicien_id: form.technicien_id ? Number(form.technicien_id): null,
+
+        manager_id: form.manager_id ? Number(form.manager_id) : null,
 
         source_demande:
           form.source_demande === "" ? null : form.source_demande,
-
-        impact:
-          form.impact === "" ? null : form.impact,
 
         priorite:
           form.priorite === "" ? null : form.priorite,
@@ -403,10 +438,6 @@ export default function Interventions() {
 
       });
 
-      console.log("UPDATE PAYLOAD :", {
-        ...form,
-        technicien_id: form.technicien_id
-      });
       fetchInterventions();
 
       resetForm();
@@ -415,6 +446,7 @@ export default function Interventions() {
     } catch (err) {
 
       console.error(err);
+      alert(err?.response?.data?.detail || "Erreur lors de la modification de l'intervention");
     }
   };
 
@@ -458,6 +490,14 @@ export default function Interventions() {
 
             <option value="EN_ATTENTE_VALIDATION">
               En attente validation
+            </option>
+
+            <option value="IMPOSSIBLE">
+              Non résolues
+            </option>
+
+            <option value="ABOUTI">
+              Terminées
             </option>
           </select>
 
@@ -514,25 +554,16 @@ export default function Interventions() {
               {/* 2. DEMANDEUR */}
               <label>Demandeur</label>
 
-              <select
-                value={form.demandeur_id}
+              <input
+                placeholder="Nom du demandeur"
+                value={form.demandeur_nom}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    demandeur_id: e.target.value
+                    demandeur_nom: e.target.value
                   })
                 }
-              >
-                <option value="">
-                  -- Choisir un demandeur --
-                </option>
-
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.username}
-                  </option>
-                ))}
-              </select>
+              />
 
               {/* 3. TITRE */}
               <label>Titre</label>
@@ -601,25 +632,6 @@ export default function Interventions() {
                 <option>Très basse</option>
               </select>
 
-              {/* 7. IMPACT */}
-              <label>Impact</label>
-
-              <select
-                value={form.impact}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    impact: e.target.value
-                  })
-                }
-              >
-                <option>Très haut</option>
-                <option>Haut</option>
-                <option>Moyen</option>
-                <option>Bas</option>
-                <option>Très bas</option>
-              </select>
-
               {/* 8. PRIORITÉ */}
               <label>Priorité</label>
 
@@ -678,118 +690,125 @@ export default function Interventions() {
 
               {/*SELECTION MATERIEL*/}
 
-                <label className="mat-select">
-                  - -  Sélectionnez le(s) matériel(s) concerné(s)  - -
-                </label>
+                <button
+                  type="button"
+                  className="mat-select-toggle"
+                  onClick={() => setShowMaterielDropdown(v => !v)}
+                >
+                  {showMaterielDropdown ? "▲" : "▼"} Sélectionnez le(s) matériel(s) concerné(s) (Facultatif)
+                </button>
 
-                <input
-                  type="text"
-                  value={rechercheMateriel}
-                  onChange={(e) =>
-                    setRechercheMateriel(e.target.value)
-                  }
-                  placeholder="Rechercher un matériel..."
-                />
+              {/* MATERIELS SELECTIONNES (toujours visibles si non vide) */}
 
+                {materielsSelectionnes.length > 0 && (
+                  <div className="materiels-selectionnes">
 
-              {/* MATERIELS SELECTIONNES */}  
-
-                <div className="materiels-selectionnes">
-
-                {materielsSelectionnes.map((m) => (
-
-                  <div
-                    key={m.id}
-                    className="materiel-chip"
-                  >
-                     <input
-                        className="quantite"
-                        type="number"
-                        min="1"
-                        value={m.quantiteDemande ?? 1}
-                        onChange={(e) => {
-                          const valeur = Math.max(1, Number(e.target.value) || 1);
-
-                          setMaterielsSelectionnes(prev =>
-                            prev.map(mat =>
-                              mat.id === m.id
-                                ? { ...mat, quantiteDemande: valeur }
-                                : mat
-                            )
-                          );
-                        }}
-                      />
-                    <div>{m.marque_ou_modele}</div>
-                    <div>{m.numero_de_serie}</div>
-                    <div>{m.statut}</div>
-                    <div>{m.lieu_stockage}</div>
-                    <div>
-                    <button
-                      type="button"
-                      className="btn-desel"
-                      onClick={() =>
-                        setMaterielsSelectionnes(
-                          materielsSelectionnes.filter(
-                            item => item.id !== m.id
-                          )
-                        )
-
-                      }
-                    >
-                      ✕
-                    </button>
-                      </div>
-                  </div>
-                ))}
-              </div>
-
-
-              {/* LISTE DES RESULTATS */}  
-
-                <div className="materiels-search-results">
-
-                <div className="materiels-categ">
-                  <div>Nom/Marque/Modèle</div>
-                  <div>N° identification</div>
-                  <div>Statut</div>
-                  <div>Emplacement</div>
-                </div>
-
-                  {materielsFiltres.map((m) => (
+                  {materielsSelectionnes.map((m) => (
 
                     <div
                       key={m.id}
-                      className="materiel-result"
-                      onClick={() => {
+                      className="materiel-chip"
+                    >
+                       <input
+                          className="quantite"
+                          type="number"
+                          min="1"
+                          value={m.quantiteDemande ?? 1}
+                          onChange={(e) => {
+                            const valeur = Math.max(1, Number(e.target.value) || 1);
 
-                        const dejaPresent =
-                          materielsSelectionnes.some(
-                            item => item.id === m.id
-                          );
-
-                        if (!dejaPresent) {
-                          setMaterielsSelectionnes([
-                            ...materielsSelectionnes,
-                            {
-                            ...m,
-                            quantiteDemande:1
-                            }
-                          ]);
-                        }
-                      }}
-                    > 
+                            setMaterielsSelectionnes(prev =>
+                              prev.map(mat =>
+                                mat.id === m.id
+                                  ? { ...mat, quantiteDemande: valeur }
+                                  : mat
+                              )
+                            );
+                          }}
+                        />
                       <div>{m.marque_ou_modele}</div>
                       <div>{m.numero_de_serie}</div>
                       <div>{m.statut}</div>
                       <div>{m.lieu_stockage}</div>
+                      <div>
+                      <button
+                        type="button"
+                        className="btn-desel"
+                        onClick={() =>
+                          setMaterielsSelectionnes(
+                            materielsSelectionnes.filter(
+                              item => item.id !== m.id
+                            )
+                          )
 
+                        }
+                      >
+                        ✕
+                      </button>
+                        </div>
                     </div>
                   ))}
                 </div>
+                )}
 
-              
+              {showMaterielDropdown && (
+                <>
+                  <input
+                    type="text"
+                    value={rechercheMateriel}
+                    onChange={(e) =>
+                      setRechercheMateriel(e.target.value)
+                    }
+                    placeholder="Rechercher un matériel..."
+                  />
+
+                  {/* LISTE DES RESULTATS */}
+
+                  <div className="materiels-search-results">
+
+                  <div className="materiels-categ">
+                    <div>Nom/Marque/Modèle</div>
+                    <div>N° identification</div>
+                    <div>Statut</div>
+                    <div>Emplacement</div>
+                  </div>
+
+                    {materielsFiltres.map((m) => (
+
+                      <div
+                        key={m.id}
+                        className="materiel-result"
+                        onClick={() => {
+
+                          const dejaPresent =
+                            materielsSelectionnes.some(
+                              item => item.id === m.id
+                            );
+
+                          if (!dejaPresent) {
+                            setMaterielsSelectionnes([
+                              ...materielsSelectionnes,
+                              {
+                              ...m,
+                              quantiteDemande:1
+                              }
+                            ]);
+                          }
+                        }}
+                      >
+                        <div>{m.marque_ou_modele}</div>
+                        <div>{m.numero_de_serie}</div>
+                        <div>{m.statut}</div>
+                        <div>{m.lieu_stockage}</div>
+
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {/* 11. DATE DÉBUT */}
-              <label>Date de livraison</label>
+              <label>Date de début</label>
 
               <input
                 type="date"
@@ -817,7 +836,7 @@ export default function Interventions() {
               />
 
               {/* 13. DATE FIN */}
-              <label>Date de récupération</label>
+              <label>Date de fin</label>
 
               <input
                 type="date"
@@ -834,13 +853,14 @@ export default function Interventions() {
               {/*LIEU*/}
               <label>Lieu</label>
 
-              <input
-                placeholder="Lieu de l'intervention"
-                value={form.lieu}
-                onChange={(e) =>
+              <LieuMapPicker
+                value={{ lieu: form.lieu, latitude: form.latitude, longitude: form.longitude }}
+                onChange={(next) =>
                   setForm({
                     ...form,
-                    lieu: e.target.value
+                    lieu: next.lieu,
+                    latitude: next.latitude,
+                    longitude: next.longitude,
                   })
                 }
               />
@@ -869,12 +889,87 @@ export default function Interventions() {
                 ))}
               </select>
 
+              {/* INFOS TECHNICIEN / MANAGER (intervention en cours de traitement) */}
+              {editId && STATUTS_AVEC_SUIVI.includes(form.statut) && (
+                <>
+                  <h3 className="admin-title" style={{ marginTop: "10px" }}>
+                    Suivi technicien / manager
+                  </h3>
+
+                  <label>Diagnostic effectué</label>
+                  <textarea
+                    placeholder="Diagnostic effectué"
+                    value={form.diagnostique_effectue}
+                    onChange={(e) =>
+                      setForm({ ...form, diagnostique_effectue: e.target.value })
+                    }
+                  />
+
+                  <label>Actions réalisées</label>
+                  <textarea
+                    placeholder="Actions réalisées"
+                    value={form.actions_realisees}
+                    onChange={(e) =>
+                      setForm({ ...form, actions_realisees: e.target.value })
+                    }
+                  />
+
+                  <label>Résultat de l'intervention</label>
+                  <select
+                    value={form.resultat_intervention}
+                    onChange={(e) =>
+                      setForm({ ...form, resultat_intervention: e.target.value })
+                    }
+                  >
+                    <option value="">-- Non renseigné --</option>
+                    <option value="Problème résolu">Problème résolu</option>
+                    <option value="Nouvelle intervention nécessaire">
+                      Nouvelle intervention nécessaire
+                    </option>
+                  </select>
+
+                  <label>Manager assigné</label>
+                  <select
+                    value={form.manager_id}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        manager_id: e.target.value ? Number(e.target.value) : "",
+                      })
+                    }
+                  >
+                    <option value="">-- Aucun --</option>
+                    {managers.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.username}
+                      </option>
+                    ))}
+                  </select>
+
+                  <label>Commentaire</label>
+                  <textarea
+                    placeholder="Commentaire"
+                    value={form.commentaire}
+                    onChange={(e) =>
+                      setForm({ ...form, commentaire: e.target.value })
+                    }
+                  />
+
+                  <label>Date de complétion</label>
+                  <input
+                    type="text"
+                    value="Renseignée automatiquement à la validation du Manager"
+                    disabled
+                  />
+                </>
+              )}
+
             </div>
 
             {editId ? (
 
               <button
-                className="admin-btn"
+                className="admin-btn btn-submit-edit"
                 onClick={updateIntervention}
               >
                 Modifier
@@ -916,16 +1011,14 @@ export default function Interventions() {
                   <th>Matériel concerné</th>
                   <th>Source</th>
                   <th>Urgence</th>
-                  <th>Impact</th>
                   <th>Priorité</th>
-                  <th>Date de livraison</th>
+                  <th>Date de début</th>
                   <th>Échéance</th>
-                  <th>Date de récupération</th>
+                  <th>Date de fin</th>
                   <th>Lieu</th>
                   <th>Technicien</th>
                   <th>Créé le</th>
-
-                  {isAdmin && <th>Actions</th>}
+                  <th>Actions</th>
                 </tr>
               </thead>
 
@@ -954,13 +1047,7 @@ export default function Interventions() {
 
                     {/* DEMANDEUR */}
                     <td>
-                      {
-                        users.find(
-                          (u) =>
-                            Number(u.id) ===
-                            Number(item.demandeur_id)
-                        )?.username || "-"
-                      }
+                      {item.demandeur_name || "-"}
                     </td>
 
                     {/* TITRE */}
@@ -1004,9 +1091,6 @@ export default function Interventions() {
                     {/* URGENCE */}
                     <td>{item.urgence}</td>
 
-                    {/* IMPACT */}
-                    <td>{item.impact}</td>
-
                     {/* PRIORITÉ */}
                     <td>{item.priorite}</td>
 
@@ -1021,7 +1105,7 @@ export default function Interventions() {
 
                     {/* GÉOLOCALISATION */}
                     <td>
-                      {item.lieu}
+                      <LieuPopupButton lieu={item.lieu} />
                     </td>
 
                     {/* TECHNICIEN */}
@@ -1047,11 +1131,10 @@ export default function Interventions() {
                     </td>
 
                     {/* ACTIONS */}
-                    {isAdmin && (
+                    <td>
+                      <div className="actions-buttons">
 
-                      <td>
-                        <div className="actions-buttons">
-
+                        {isAdmin && (
                           <button
                             className="btn-modifier"
                             onClick={() =>
@@ -1060,7 +1143,26 @@ export default function Interventions() {
                           >
                             Modifier
                           </button>
+                        )}
 
+                        {item.statut === "IMPOSSIBLE" && (
+                          <button
+                            className="btn-imprimer"
+                            onClick={() =>
+                              navigate(
+                                `/interventions/imprimer?titre=${encodeURIComponent(
+                                  item.titre
+                                )}&typeIntervention=${encodeURIComponent(
+                                  item.type_intervention || ""
+                                )}`
+                              )
+                            }
+                          >
+                            Imprimer
+                          </button>
+                        )}
+
+                        {isAdmin && (
                           <button
                             className="btn-supprimer"
                             onClick={() =>
@@ -1069,11 +1171,10 @@ export default function Interventions() {
                           >
                             Supprimer
                           </button>
+                        )}
 
-                        </div>
-                      </td>
-
-                    )}
+                      </div>
+                    </td>
 
                   </tr>
 

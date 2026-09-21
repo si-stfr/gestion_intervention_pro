@@ -54,7 +54,7 @@ export default function Sidebar() {
         {/* ================= TECHNICIEN ================= */}
         {role === "TECHNICIEN" && (
           <>
-            <Link to="/generalview" className="link-vue">Vue d'ensemble</Link>
+            <Link to="/generalview" className="link-purple">Vue d'ensemble</Link>
             <Link to="/technicien" className="link-admin">Dashboard Technicien</Link>
             <Link to="/interventions" className="link-interventions">Interventions</Link>
             <Link to="/materiels" className="link-materiel">Matériels</Link>
@@ -64,7 +64,7 @@ export default function Sidebar() {
         {/* ================= MANAGER ================= */}
         {role === "MANAGER" && (
           <>
-            <Link to="/generalview" className="link-vue">Vue d'ensemble</Link>
+            <Link to="/generalview" className="link-purple">Vue d'ensemble</Link>
             <Link to="/manager" className="link-admin">Dashboard Manager</Link>
             <Link to="/interventions" className="link-interventions">Interventions</Link>
             <Link to="/materiels" className="link-materiel">Matériels</Link>
@@ -74,7 +74,7 @@ export default function Sidebar() {
         {/* ================= INTERVENANT ================= */}
         {role === "INTERVENANT" && (
           <>
-            <Link to="/generalview" className="link-vue">Vue d'ensemble</Link>
+            <Link to="/generalview" className="link-purple">Vue d'ensemble</Link>
             <Link to="/intervenant" className="link-admin">Dashboard</Link>
             <Link to="/interventions" className="link-interventions">Interventions</Link>
             <Link to="/materiels" className="link-materiel">Matériels</Link>
@@ -82,15 +82,7 @@ export default function Sidebar() {
         )}
 
         {/* ================= COMMUN ================= */}
-        <Link to="/interventions/abouti" className="link-green">
-          Interventions Terminées
-        </Link>
-
-        <Link to="/interventions/impossible" className="link-purple">
-          Interventions Non Résolues
-        </Link>
-
-        <Link to="/profile" className="link-gray">
+        <Link to="/profile" className="link-green">
           Mon profil
         </Link>
 

@@ -1,21 +1,26 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import "../assets/CSS_JS/AdminDashboard.css";
 import "../assets/CSS_JS/global.css";
 import Sidebar from "../components/Sidebar";
 import LateAlert from "../components/LateAlert";
-import {PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis} from "recharts";
+import {Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis} from "recharts";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { useMemo } from "react";
+import { sortInterventions } from "../utils/sortInterventions";
+import InterventionsStatusPieChart from "../components/InterventionsStatusPieChart";
+import LieuPopupButton from "../components/LieuPopupButton";
 
 export default function VueEnsemble() {
+
+  const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
   const [data, setData] = useState([]);
   const [materiels, setMateriels] = useState([]);
   const[totalMateriels, setTotalMateriels] = useState(0)
-  const [filterType, setFilterType] = useState("");
   const [filterStatut, setFilterStatut] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -43,30 +48,6 @@ export default function VueEnsemble() {
   IMPOSSIBLE: "Non Résolues",
   RESOLU : "Resolu"
 };
-
-  const [form, setForm] = useState({
-    demandeur_id: "",
-    titre: "",
-    description_de_la_panne: "",
-
-    source_demande: "Direct",
-    urgence: "Moyenne",
-    impact: "Moyen",
-    priorite: "Moyenne",
-
-    type_intervention: "Maintenance",
-    type_intervention_autre: "",
-
-    statut: "Signalé",
-
-    date_debut: "",
-    echeance: "",
-    date_fin: "",
-
-    lieu: ""
-  });
-
-  const [editId, setEditId] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -115,20 +96,10 @@ export default function VueEnsemble() {
 
 
 
-  const filteredInterventions = (data ?? []).filter(
-    (item) =>
-      [
-        "SIGNALE",
-        "EN_COURS",
-        "EN_RETARD",
-        "EN_ATTENTE_VALIDATION",
-        "IMPOSSIBLE",
-        "ABOUTI"
-      ].includes(item.statut) &&
-      (
-        selectedStatus === "" ||
-        item.statut === selectedStatus
-      )
+  const filteredInterventions = sortInterventions(
+    (data ?? []).filter(
+      (item) => selectedStatus === "" || item.statut === selectedStatus
+    )
   );
 
 
@@ -179,77 +150,6 @@ export default function VueEnsemble() {
   };
 
 
-  const COLORS = [
-    "#0074c7",
-    "#27ae60",
-    "#f1c40f",
-    "#cd2c2e",
-    "#e77000",
-    "#9b59b6",
-    "#8b5a2b"
-    ];
-
-    const allCategories = [
-      "Matériel informatique",
-      "Mobilier",
-      "Matériel de travaux",
-      "Matériel routier",
-      "Matériel évenementiel",
-      "Equipement public",
-      "Autres"
-    ];
-
-    const groupedCategories = [];
-    for (let i = 0; i < allCategories.length; i += 5) {
-      groupedCategories.push(allCategories.slice(i, i + 5));
-    }
-
-
-  const pieData = allCategories
-  .map((cat) => ({
-    name: cat,
-    value:
-      cat === "Autres"
-        ? materiels.filter(
-            (m) =>
-              ![
-                "Matériel informatique",
-                "Mobilier",
-                "Matériel de travaux",
-                "Matériel routier",
-                "Matériel évenementiel",
-                "Equipement public",
-                "Autres"
-              ].includes(m.type_de_materiel)
-          ).length
-        : materiels.filter(
-            (m) => m.type_de_materiel === cat
-          ).length,
-  }))
-  .filter((item) => item.value > 0);
-
-
-
-  const filteredMateriels = materiels.filter((m) => {
-      if (!filterType) return true;
-
-      if (filterType === "Autres") {
-        return ![
-          "Matériel informatique",
-          "Mobilier",
-          "Matériel de travaux",
-          "Matériel routier",
-          "Matériel évenementiel",
-          "Equipement public",
-          "Autres"
-        ].includes(m.type_de_materiel);
-      }
-
-      return m.type_de_materiel === filterType;
-    });
-
-
-    
 const normalizeMateriel = (type) => {
   if (!type) return "";
 
@@ -268,56 +168,15 @@ const normalizeMateriel = (type) => {
 };
 
 
-  const renderLegend = () => {
-  return (
-    <div className="legend-container">
-      {groupedCategories.map((group, groupIndex) => (
-        <div key={`legend-row-${groupIndex}`} className="legend-row">
-          {group.map((cat) => {
-            const pieIndex = pieData.findIndex(
-              p => p.name === cat
-            );
-
-            const exists = pieIndex !== -1;
-
-            return (
-              <div
-                key={cat}
-                className="legend-item"
-                style={{
-                  opacity: exists ? 1 : 0.4
-                }}
-              >
-                <span
-                  className="legend-color"
-                  style={{
-                    background:
-                      exists
-                        ? COLORS[pieIndex % COLORS.length]
-                        : "#ccc"
-                  }}
-                />
-                <span>{cat}</span>
-              </div>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-
 const exportToExcel = () => {
   const worksheet = XLSX.utils.json_to_sheet(
     filteredInterventions.map((item) => ({
       ID: item.id,
       Statut: statutLabels[item.statut],
       Titre: item.titre,
-      Demandeur: users.find((u) => Number(u.id) === Number(item.demandeur_id))?.username || "-",
+      Demandeur: item.demandeur_name || "-",
       Technicien: item.technicien_name,
       Urgence: item.urgence,
-      Impact: item.impact,
       Priorite: item.priorite,
       DateDebut: item.date_debut,
       Echeance: item.echeance,
@@ -470,14 +329,14 @@ const yTicks = Array.from(
                   <th>Matériel concerné</th>
                   <th>Source</th>
                   <th>Urgence</th>
-                  <th>Impact</th>
                   <th>Priorité</th>
-                  <th>Date de livraison</th>
+                  <th>Date de début</th>
                   <th>Échéance</th>
-                  <th>Date de récupération</th>
+                  <th>Date de fin</th>
                   <th>Lieu</th>
                   <th>Technicien</th>
                   <th>Créé le</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
@@ -506,13 +365,7 @@ const yTicks = Array.from(
 
                     {/* DEMANDEUR */}
                     <td>
-                      {
-                        users.find(
-                          (u) =>
-                            Number(u.id) ===
-                            Number(item.demandeur_id)
-                        )?.username || "-"
-                      }
+                      {item.demandeur_name || "-"}
                     </td>
 
                     {/* TITRE */}
@@ -553,9 +406,6 @@ const yTicks = Array.from(
                     {/* URGENCE */}
                     <td>{item.urgence}</td>
 
-                    {/* IMPACT */}
-                    <td>{item.impact}</td>
-
                     {/* PRIORITÉ */}
                     <td>{item.priorite}</td>
 
@@ -570,7 +420,7 @@ const yTicks = Array.from(
 
                     {/* GÉOLOCALISATION */}
                     <td>
-                      {item.lieu}
+                      <LieuPopupButton lieu={item.lieu} />
                     </td>
 
                     {/* TECHNICIEN */}
@@ -595,6 +445,28 @@ const yTicks = Array.from(
                       }
                     </td>
 
+                    {/* ACTIONS */}
+                    <td>
+                      {item.statut === "IMPOSSIBLE" && (
+                        <div className="actions-buttons">
+                          <button
+                            className="btn-imprimer"
+                            onClick={() =>
+                              navigate(
+                                `/interventions/imprimer?titre=${encodeURIComponent(
+                                  item.titre
+                                )}&typeIntervention=${encodeURIComponent(
+                                  item.type_intervention || ""
+                                )}`
+                              )
+                            }
+                          >
+                            Imprimer
+                          </button>
+                        </div>
+                      )}
+                    </td>
+
                   </tr>
 
                 ))}
@@ -609,40 +481,14 @@ const yTicks = Array.from(
           </button> 
           </div> 
         )}
-        <div className="chart-container">
-          <h2>Parc Matériel ({totalMateriels})</h2>
+        <InterventionsStatusPieChart
+          interventions={data}
+          onSliceClick={(key) =>
+            setSelectedStatus((prev) => (prev === key ? "" : key))
+          }
+        />
 
-          <ResponsiveContainer width="100%" height={500}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={180}
-                label = {({ name, value }) =>
-                    `${name} (${value})`
-                  }
-                onClick={(data) => {
-                  setFilterType((prev) =>
-                    prev === data.name ? "" : data.name
-                  );
-                }}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="legend-wrapper">
-          {renderLegend()}
-        </div>
+        <h2 className="chart-label">Parc Matériel ({totalMateriels})</h2>
 
         <div className="table-dashboard">
           <div className="table-scroll">
@@ -659,7 +505,7 @@ const yTicks = Array.from(
               </thead>
 
               <tbody>
-                    {filteredMateriels.map((m) => (
+                    {materiels.map((m) => (
                       <tr key={m.id}>
                         <td 
                           className={`materiel ${

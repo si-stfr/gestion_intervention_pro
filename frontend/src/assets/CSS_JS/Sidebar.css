@@ -49,10 +49,6 @@
   color: red !important;
 }
 
-.sidebar .sidebar-content .link-vue {
-  color: rgba(168, 109, 82, 0.986) !important;
-}
-
 .sidebar .sidebar-content .link-interventions {
   color: orange !important;
 }
@@ -69,8 +65,8 @@
   color: purple !important;
 }
 
-.sidebar .sidebar-content .link-gray {
-  color: gray !important;
+.sidebar .sidebar-content .link-green {
+  color: #27AE60 !important;
 }
 
 .sidebar .sidebar-content .link-materiel {
