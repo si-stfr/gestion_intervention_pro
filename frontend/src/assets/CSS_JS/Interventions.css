@@ -1043,6 +1043,15 @@ td {
   background: #d4ac0d !important;
 }
 
+.btn-submit-renew {
+  background: orange !important;
+  color: #1a1a1a !important;
+}
+
+.btn-submit-renew:hover {
+  background: #cc8400 !important;
+}
+
 /* =========================
    CARTE LIEU (Leaflet / OpenStreetMap)
 ========================= */

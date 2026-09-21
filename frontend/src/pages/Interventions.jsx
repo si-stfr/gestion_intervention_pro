@@ -55,6 +55,7 @@ export default function Interventions() {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [editId, setEditId] = useState(null);
+  const [renewId, setRenewId] = useState(null);
   const [materielsSelectionnes, setMaterielsSelectionnes] = useState([]);
   const [rechercheMateriel, setRechercheMateriel] = useState("");
   const [showMaterielDropdown, setShowMaterielDropdown] = useState(false);
@@ -231,6 +232,7 @@ export default function Interventions() {
     setRechercheMateriel("");
     setShowMaterielDropdown(false);
     setEditId(null);
+    setRenewId(null);
   };
 
   // =========================================
@@ -278,6 +280,13 @@ export default function Interventions() {
         return;
         }
 
+    if (renewId) {
+      const confirmRenew = window.confirm(
+        "Confirmer le renouvellement ? L'intervention Non résolue d'origine sera définitivement supprimée."
+      );
+      if (!confirmRenew) return;
+    }
+
     try {
 
       // les champs de suivi technicien/manager n'ont de sens qu'en édition
@@ -316,14 +325,25 @@ export default function Interventions() {
 
       });
 
+      if (renewId) {
+        await api.delete(`/intervention/${renewId}`);
+      }
+
       fetchInterventions();
+
+      const wasRenewal = Boolean(renewId);
 
       resetForm();
 
-      alert("Intervention créé avec succès")
+      alert(
+        wasRenewal
+          ? "Intervention renouvelée avec succès"
+          : "Intervention créé avec succès"
+      );
     } catch (err) {
 
       console.error(err);
+      alert(err?.response?.data?.detail || "Erreur lors de la création de l'intervention");
     }
 
   };
@@ -405,6 +425,72 @@ export default function Interventions() {
       commentaire: item.commentaire ?? "",
       manager_id: item.manager_id ? Number(item.manager_id) : "",
     });
+  };
+
+  // =========================================
+  // RENOUVELER (pré-remplit le formulaire de CRÉATION
+  // à partir d'une intervention Non résolue ; le suivi
+  // technicien/manager repart de zéro)
+  // =========================================
+  const renewIntervention = (item) => {
+
+    setEditId(null);
+    setRenewId(item.id);
+    setShowMaterielDropdown(false);
+
+    setForm({
+
+      demandeur_nom: item.demandeur_name ?? "",
+
+      titre: item.titre ?? "",
+
+      description_de_la_panne:
+        item.description_de_la_panne ?? "",
+
+      statut: "SIGNALE",
+
+      source_demande: item.source_demande ?? "Direct",
+
+      priorite: item.priorite ?? "",
+
+      type_intervention:
+        item.type_intervention ?? "",
+
+      type_intervention_autre:
+        item.type_intervention_autre ?? "",
+
+      date_debut: "",
+      echeance: "",
+      date_fin: "",
+
+      lieu: item.lieu ?? "",
+      latitude: item.latitude ?? null,
+      longitude: item.longitude ?? null,
+
+      urgence: item.urgence || "Moyenne",
+
+      technicien_id: item.technicien_id ? Number(item.technicien_id) : "",
+
+      diagnostique_effectue: "",
+      actions_realisees: "",
+      resultat_intervention: "",
+      commentaire: "",
+      manager_id: "",
+    });
+
+    setMaterielsSelectionnes(
+      (item.materiels || []).map((m) => ({
+        ...m,
+        quantiteDemande: m.quantite ?? 1,
+      }))
+    );
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.querySelector(".admin-grid")?.scrollTo({ top: 0, behavior: "smooth" });
+
+    alert(
+      "Le formulaire a été pré-rempli avec les informations de cette intervention. Choisissez de nouvelles dates puis cliquez sur \"Renouveler\" pour créer la nouvelle intervention (l'ancienne sera supprimée)."
+    );
   };
 
   // =========================================
@@ -978,10 +1064,10 @@ export default function Interventions() {
             ) : (
 
               <button
-                className="admin-btn"
+                className={`admin-btn ${renewId ? "btn-submit-renew" : ""}`}
                 onClick={addIntervention}
               >
-                Ajouter
+                {renewId ? "Renouveler" : "Ajouter"}
               </button>
 
             )}
@@ -1162,7 +1248,18 @@ export default function Interventions() {
                           </button>
                         )}
 
-                        {isAdmin && (
+                        {isAdmin && item.statut === "IMPOSSIBLE" && (
+                          <button
+                            className="btn-renouveler"
+                            onClick={() =>
+                              renewIntervention(item)
+                            }
+                          >
+                            Renouveler
+                          </button>
+                        )}
+
+                        {isAdmin && item.statut !== "IMPOSSIBLE" && (
                           <button
                             className="btn-supprimer"
                             onClick={() =>

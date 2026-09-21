@@ -58,6 +58,7 @@ export default function IntervenantDashboard() {
   const [rechercheMateriel, setRechercheMateriel] = useState("");
 
   const [editId, setEditId] = useState(null);
+  const [renewId, setRenewId] = useState(null);
   const [showMaterielDropdown, setShowMaterielDropdown] = useState(false);
 
   const techniciens = users.filter(
@@ -177,12 +178,6 @@ export default function IntervenantDashboard() {
     (interventions ?? []).filter(
       (item) =>
         Number(item.cree_par_id) === Number(user.id) &&
-        [
-          "SIGNALE",
-          "EN_COURS",
-          "EN_RETARD",
-          "EN_ATTENTE_VALIDATION"
-        ].includes(item.statut) &&
         (
           selectedStatus === "" ||
           item.statut === selectedStatus
@@ -243,6 +238,7 @@ export default function IntervenantDashboard() {
     setRechercheMateriel("");
     setShowMaterielDropdown(false);
     setEditId(null);
+    setRenewId(null);
   };
 
   // =========================================
@@ -290,6 +286,13 @@ export default function IntervenantDashboard() {
         return;
         }
 
+    if (renewId) {
+      const confirmRenew = window.confirm(
+        "Confirmer le renouvellement ? L'intervention Non résolue d'origine sera définitivement supprimée."
+      );
+      if (!confirmRenew) return;
+    }
+
     try {
 
       await api.post("/intervention/", {
@@ -321,7 +324,13 @@ export default function IntervenantDashboard() {
       }))
     });
 
-      alert("Intervetion créé avec succès");
+      if (renewId) {
+        await api.delete(`/intervention/${renewId}`);
+      }
+
+      const wasRenewal = Boolean(renewId);
+
+      alert(wasRenewal ? "Intervention renouvelée avec succès" : "Intervetion créé avec succès");
 
       fetchInterventions();
 
@@ -330,6 +339,7 @@ export default function IntervenantDashboard() {
     } catch (err) {
 
       console.error(err);
+      alert(err?.response?.data?.detail || "Erreur lors de la création de l'intervention");
     }
   };
 
@@ -411,6 +421,66 @@ export default function IntervenantDashboard() {
   };
 
   // =========================================
+  // RENOUVELER (pré-remplit le formulaire de CRÉATION
+  // à partir d'une intervention Non résolue)
+  // =========================================
+  const renewIntervention = (item) => {
+
+    setEditId(null);
+    setRenewId(item.id);
+    setShowMaterielDropdown(false);
+
+    setForm({
+
+      demandeur_nom: item.demandeur_name || user?.username || "",
+
+      titre: item.titre || "",
+
+      description_de_la_panne:
+        item.description_de_la_panne || "",
+
+      statut: "SIGNALE",
+
+      source_demande: item.source_demande || "Direct",
+
+      priorite: item.priorite || "Majeure",
+
+      type_intervention:
+        item.type_intervention || "Maintenance",
+
+      type_intervention_autre:
+        item.type_intervention_autre || "",
+
+      date_debut: "",
+      echeance: "",
+      date_fin: "",
+
+      lieu: item.lieu || "",
+      latitude: item.latitude ?? null,
+      longitude: item.longitude ?? null,
+
+      urgence: item.urgence || "Moyenne",
+
+      technicien_id:
+        item.technicien_id || ""
+    });
+
+    setMaterielsSelectionnes(
+      (item.materiels || []).map((m) => ({
+        ...m,
+        quantiteDemande: m.quantite ?? 1,
+      }))
+    );
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.querySelector(".admin-grid")?.scrollTo({ top: 0, behavior: "smooth" });
+
+    alert(
+      "Le formulaire a été pré-rempli avec les informations de cette intervention. Choisissez de nouvelles dates puis cliquez sur \"Renouveler\" pour créer la nouvelle intervention (l'ancienne sera supprimée)."
+    );
+  };
+
+  // =========================================
   // UPDATE
   // =========================================
   const updateIntervention = async () => {
@@ -484,6 +554,14 @@ export default function IntervenantDashboard() {
 
             <option value="EN_ATTENTE_VALIDATION">
               En attente validation
+            </option>
+
+            <option value="IMPOSSIBLE">
+              Non résolues
+            </option>
+
+            <option value="ABOUTI">
+              Terminées
             </option>
 
           </select>
@@ -897,10 +975,10 @@ export default function IntervenantDashboard() {
           ) : (
 
             <button
-              className="admin-btn"
+              className={`admin-btn ${renewId ? "btn-submit-renew" : ""}`}
               onClick={addIntervention}
             >
-              Ajouter
+              {renewId ? "Renouveler" : "Ajouter"}
             </button>
 
           )}
@@ -1061,14 +1139,27 @@ export default function IntervenantDashboard() {
                           Modifier
                         </button>
 
-                        <button
-                          className="btn-supprimer"
-                          onClick={() =>
-                            deleteIntervention(item.id)
-                          }
-                        >
-                          Supprimer
-                        </button>
+                        {item.statut === "IMPOSSIBLE" && (
+                          <button
+                            className="btn-renouveler"
+                            onClick={() =>
+                              renewIntervention(item)
+                            }
+                          >
+                            Renouveler
+                          </button>
+                        )}
+
+                        {item.statut !== "IMPOSSIBLE" && (
+                          <button
+                            className="btn-supprimer"
+                            onClick={() =>
+                              deleteIntervention(item.id)
+                            }
+                          >
+                            Supprimer
+                          </button>
+                        )}
 
                       </div>
 
