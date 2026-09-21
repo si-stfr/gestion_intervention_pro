@@ -16,8 +16,8 @@ const statutLabels = {
   EN_COURS: "En cours",
   EN_RETARD: "En retard",
   EN_ATTENTE_VALIDATION: "En attente validation",
-  ABOUTI: "Abouti",
-  IMPOSSIBLE: "Impossible"
+  ABOUTI: "Terminée",
+  IMPOSSIBLE: "Non réolue"
 };
 
 const normalizeStatut = (statut) => {
