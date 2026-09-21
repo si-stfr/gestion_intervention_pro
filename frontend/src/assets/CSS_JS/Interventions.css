@@ -240,11 +240,11 @@
 }
 
 .ligne.encours {
-  border-left: 3px solid #f1c40f;
+  border: 3px solid #f1c40f;
 }
 
 .ligne.enretard {
-  border-left: 3px solid orange;
+  border: 3px solid orange;
 }
 
 .ligne.enattentevalidation td {
@@ -263,7 +263,7 @@
 }
 
 .ligne.abouti {
-  border-left: 3px solid #27ae60;
+  border: 3px solid #27ae60;
 }
 
 .ligne.impossible td{

@@ -153,19 +153,6 @@ body {
   color: white;
 }
 
-/* ===== STATS COLORS ===== */
-.signalé {
-  border: 2px solid red;
-}
-
-.encours {
-  border: 2px solid orange;
-}
-
-.abouti {
-  border: 2px solid green;
-}
-
 /* ===== INTERVENTIONS ===== */
 .intervention-list {
   display: grid;
