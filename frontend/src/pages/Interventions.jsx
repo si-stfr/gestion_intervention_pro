@@ -20,7 +20,6 @@ const statutLabels = {
   EN_ATTENTE_VALIDATION: "En attente validation",
   ABOUTI: "Terminée",
   IMPOSSIBLE: "Non résolue",
-  RESOLU : "Resolu"
 };
 
 const normalizeStatut = (statut) => {
@@ -37,8 +36,6 @@ const normalizeStatut = (statut) => {
       return "abouti";
     case "IMPOSSIBLE":
       return "impossible";
-    case "RESOLU":
-      return "resolu";
     default:
       return "";
   }
@@ -190,7 +187,6 @@ export default function Interventions() {
     EN_COURS: "encours",
     EN_RETARD: "enretard",
     EN_ATTENTE_VALIDATION: "enattentevalidation",
-    RESOLU : "resolu"
   };
 
   // =========================================

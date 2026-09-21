@@ -99,11 +99,6 @@ h3 {
   border-color: purple;
 }
 
-.card.resolu {
-  border-color: green;
-}
-
-
 .intervention-card.retard {
   border: 2px solid orange;
 }
@@ -492,11 +487,6 @@ textarea {
 
 .card.impossible:hover {
   background: purple;
-  color:white;
-}
-
-.card.resolu:hover {
-  background: green;
   color:white;
 }
 

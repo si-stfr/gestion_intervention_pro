@@ -269,7 +269,7 @@ const yTicks = Array.from(
           </div>
 
         <div 
-          className="card resolu"
+          className="card enattentevalidation"
           onClick={() => setSelectedStatus("EN_ATTENTE_VALIDATION")}
         >
             <h3>En attente de validation</h3>

@@ -45,7 +45,6 @@ export default function AdminDashboard() {
   EN_ATTENTE_VALIDATION: "En attente validation",
   ABOUTI: "Terminée",
   IMPOSSIBLE: "Non Résolues",
-  RESOLU : "Resolu"
 };
 
   useEffect(() => {
@@ -112,8 +111,6 @@ export default function AdminDashboard() {
       return "abouti";
     case "IMPOSSIBLE":
       return "impossible";
-    case "RESOLU":
-      return "resolu";
     default:
       return "";
     }

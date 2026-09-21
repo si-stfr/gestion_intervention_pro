@@ -228,23 +228,60 @@
   color: #8b5a2b;
 }
 
-.status-filter.resolu {
-  border-color: #368b2b;
-  color: #368b2b;
-}
-
 /* BARRE GAUCHE */
 
 .ligne.signale {
   border: 3px solid #cd2c2e;
 }
 
+.ligne.encours td{
+  border-top: 3px solid #cd2c2e !important;
+  border-bottom: 3px solid #cd2c2e !important;
+  border-left: 3px solid #cd2c2e !important;
+}
+
+.ligne.encours td:first-child {
+  border-left: 3px solid #cd2c2e !important;
+}
+
+.ligne.encours td:last-child {
+  border-right: 3px solid #cd2c2e !important;
+}
+
 .ligne.encours {
   border: 3px solid #f1c40f;
 }
 
+.ligne.encours td{
+  border-top: 3px solid #f1c40f !important;
+  border-bottom: 3px solid #f1c40f !important;
+  border-left: 3px solid #f1c40f !important;
+}
+
+.ligne.encours td:first-child {
+  border-left: 3px solid #f1c40f !important;
+}
+
+.ligne.encours td:last-child {
+  border-right: 3px solid #f1c40f !important;
+}
+
 .ligne.enretard {
   border: 3px solid orange;
+}
+
+.ligne.enretard td{
+  border-top: 3px solid orange !important;
+  border-bottom: 3px solid orange !important;
+  border-left: 3px solid orange !important;
+}
+
+.ligne.enretard td:first-child {
+  border-left: 3px solid orange !important;
+}
+
+.ligne.enretard td:last-child {
+  border-right: 3px solid orange !important;
 }
 
 .ligne.enattentevalidation td {
@@ -264,6 +301,20 @@
 
 .ligne.abouti {
   border: 3px solid #27ae60;
+}
+
+.ligne.abouti td{
+  border-top: 3px solid #27ae60 !important;
+  border-bottom: 3px solid #27ae60 !important;
+  border-left: 3px solid #27ae60 !important;
+}
+
+.ligne.abouti td:first-child {
+  border-left: 3px solid #27ae60 !important;
+}
+
+.ligne.abouti td:last-child {
+  border-right: 3px solid #27ae60 !important;
 }
 
 .ligne.impossible td{
@@ -312,11 +363,6 @@
   font-weight: bold;
 }
 
-.statut.resolu{
-  color: #368b2b;
-  font-weight: bold;
-}
-
 /* INPUT RECHERCHE */
 .search-input {
   padding: 8px;
@@ -356,10 +402,6 @@
 
 .select-statut.impossible {
   border-color: purple;
-}
-
-.select-statut.resolu{
-  border-color: #368b2b;
 }
 
 /* TABLE */
@@ -406,10 +448,6 @@
 
 .statut.impossible {
   color: purple;
-}
-
-.statut.resolu{
-  color:#368b2b;
 }
 
 .card-grid {
