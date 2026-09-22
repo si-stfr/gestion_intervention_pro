@@ -11,6 +11,7 @@ from auth.security import (
 
 from models.user import User
 from models.password_reset_token import PasswordResetToken
+from models.refresh_token import RefreshToken
 from services.email_service import send_email
 
 RESET_TOKEN_EXPIRE_MINUTES = 60
@@ -117,6 +118,23 @@ def request_password_reset(db, email: str):
             "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email."
         ),
     )
+
+
+# =========================================================
+# SUPPRESSION AUTOMATIQUE DES TOKENS EXPIRÉS
+# =========================================================
+def cleanup_expired_tokens(db):
+    now = datetime.utcnow()
+
+    db.query(RefreshToken).filter(RefreshToken.expires_at < now).delete(
+        synchronize_session=False
+    )
+
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.expires_at < now
+    ).delete(synchronize_session=False)
+
+    db.commit()
 
 
 def reset_password(db, raw_token: str, new_password: str) -> bool:

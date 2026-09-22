@@ -67,6 +67,20 @@ try:
 except Exception:
     pass
 
+# =========================================================
+# NETTOYAGE DES TOKENS EXPIRÉS (refresh + reset mot de passe)
+# =========================================================
+try:
+    from services.auth_service import cleanup_expired_tokens
+
+    _cleanup_tokens_db = SessionLocal()
+    try:
+        cleanup_expired_tokens(_cleanup_tokens_db)
+    finally:
+        _cleanup_tokens_db.close()
+except Exception:
+    pass
+
 
 # =========================================================
 # FASTAPI APP

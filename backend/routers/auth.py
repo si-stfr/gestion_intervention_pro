@@ -21,6 +21,7 @@ from services.auth_service import (
     create_user,
     request_password_reset,
     reset_password,
+    cleanup_expired_tokens,
 )
 
 from middleware.auth_middleware import get_current_user
@@ -59,6 +60,8 @@ def register(user: RegisterSchema, db: Session = Depends(get_db)):
 # =========================================================
 @router.post("/login")
 def login(user: LoginSchema, db: Session = Depends(get_db)):
+
+    cleanup_expired_tokens(db)
 
     db_user = authenticate_user(db, user.username, user.password)
 
