@@ -17,14 +17,10 @@ export default function InterventionForm({
 
     source_demande: "Direct",
 
-    urgence: "Moyenne",
-    priorite: "Moyenne",
-
     type_intervention: "Maintenance",
     type_intervention_autre: "",
 
     date_debut: "",
-    echeance: "",
     date_fin: "",
 
     latitude: "",
@@ -198,39 +194,6 @@ export default function InterventionForm({
         </div>
 
         <div className="form-group">
-          <label>Urgence</label>
-
-          <select
-            value={form.urgence}
-            onChange={(e) =>
-              handleChange("urgence", e.target.value)
-            }
-          >
-            <option>Très haute</option>
-            <option>Haute</option>
-            <option>Basse</option>
-            <option>Très basse</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Priorité</label>
-
-          <select
-            value={form.priorite}
-            onChange={(e) =>
-              handleChange("priorite", e.target.value)
-            }
-          >
-            <option>Majeure</option>
-            <option>Très haute</option>
-            <option>Moyenne</option>
-            <option>Basse</option>
-            <option>Très basse</option>
-          </select>
-        </div>
-
-        <div className="form-group">
           <label>Type intervention</label>
 
           <select
@@ -280,19 +243,6 @@ export default function InterventionForm({
                 "date_debut",
                 e.target.value
               )
-            }
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Date échéance</label>
-
-          <input
-            type="date"
-            value={form.echeance}
-            onChange={(e) =>
-              handleChange("echeance", e.target.value)
             }
             required
           />

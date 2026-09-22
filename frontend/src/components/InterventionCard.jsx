@@ -44,13 +44,6 @@ export default function InterventionCard({
           </span>
         </div>
 
-        <div className="priority-block">
-          <span className="priority-label">Priorité</span>
-          <span className="priority-value">
-            {intervention.priorite}
-          </span>
-        </div>
-
       </div>
 
       <div className="card-body">

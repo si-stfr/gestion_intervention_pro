@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session, joinedload, selectinload
 from datetime import datetime
 from sqlalchemy import select
+import json
 
 from database import get_db
 from models import user
@@ -86,6 +87,9 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # =========================
                 "demandeur_id": i.demandeur_id,
                 "demandeur_nom": i.demandeur_nom,
+                "demandeur_prenom": i.demandeur_prenom,
+                "demandeur_email": i.demandeur_email,
+                "demandeur_telephone": i.demandeur_telephone,
                 "cree_par_id": i.cree_par_id,
                 "technicien_id": i.technicien_id,
                 "manager_id": i.manager_id,
@@ -98,8 +102,6 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # ENUMS (valeurs propres)
                 # =========================
                 "source_demande": i.source_demande.value if i.source_demande else None,
-                "urgence": i.urgence.value if i.urgence else None,
-                "priorite": i.priorite.value if i.priorite else None,
                 "type_intervention": (
                     i.type_intervention.value if i.type_intervention else None
                 ),
@@ -107,11 +109,18 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # DETAILS
                 # =========================
                 "type_intervention_autre": i.type_intervention_autre,
+                "services_de_la_commune": (
+                    json.loads(i.services_de_la_commune)
+                    if i.services_de_la_commune
+                    else []
+                ),
+                "sites_de_la_commune": (
+                    json.loads(i.sites_de_la_commune) if i.sites_de_la_commune else []
+                ),
                 # =========================
                 # DATES
                 # =========================
                 "date_debut": i.date_debut.isoformat() if i.date_debut else None,
-                "echeance": i.echeance.isoformat() if i.echeance else None,
                 "date_fin": i.date_fin.isoformat() if i.date_fin else None,
                 "date_verification": (
                     i.date_verification.isoformat() if i.date_verification else None
@@ -307,6 +316,10 @@ def update_technicien(
 def update_intervention(db, intervention, update_data):
     if update_data.get("piece_jointe"):
         update_data["piece_jointe"] = normalize_piece_jointe(update_data["piece_jointe"])
+
+    for field in ["services_de_la_commune", "sites_de_la_commune"]:
+        if isinstance(update_data.get(field), list):
+            update_data[field] = json.dumps(update_data[field], ensure_ascii=False)
 
     for key, value in update_data.items():
         setattr(intervention, key, value)

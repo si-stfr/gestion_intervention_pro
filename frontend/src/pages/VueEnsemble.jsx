@@ -172,11 +172,13 @@ const exportToExcel = () => {
       Statut: statutLabels[item.statut],
       Titre: item.titre,
       Demandeur: item.demandeur_name || "-",
+      Demandeur_prenom: item.demandeur_prenom || "-",
+      Demandeur_email: item.demandeur_email || "-",
+      Demandeur_telephone: item.demandeur_telephone || "-",
+      Services_de_la_commune: item.services_de_la_commune?.join(", ") || "-",
+      Sites_de_la_commune: item.sites_de_la_commune?.join(", ") || "-",
       Technicien: item.technicien_name,
-      Urgence: item.urgence,
-      Priorite: item.priorite,
       DateDebut: item.date_debut,
-      Echeance: item.echeance,
       DateFin: item.date_fin,
       Lieu: item.lieu,
       CreatedAt: item.created_at,
@@ -319,16 +321,18 @@ const yTicks = Array.from(
                 <tr>
                   <th>Statut</th>
                   <th>Demandeur</th>
+                  <th>Prénom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
                   <th>Titre</th>
                   <th>Type intervention</th>
                   <th>Type autre</th>
+                  <th>Services demandés</th>
+                  <th>Sites correspondant</th>
                   <th>Description</th>
                   <th>Matériel concerné</th>
                   <th>Source</th>
-                  <th>Urgence</th>
-                  <th>Priorité</th>
                   <th>Date de début</th>
-                  <th>Échéance</th>
                   <th>Date de fin</th>
                   <th>Lieu</th>
                   <th>Technicien</th>
@@ -365,6 +369,15 @@ const yTicks = Array.from(
                       {item.demandeur_name || "-"}
                     </td>
 
+                    {/* PRÉNOM */}
+                    <td>{item.demandeur_prenom || "-"}</td>
+
+                    {/* EMAIL */}
+                    <td>{item.demandeur_email || "-"}</td>
+
+                    {/* TÉLÉPHONE */}
+                    <td>{item.demandeur_telephone || "-"}</td>
+
                     {/* TITRE */}
                     <td>{item.titre}</td>
 
@@ -379,6 +392,20 @@ const yTicks = Array.from(
                         item.type_intervention_autre
                         || "-"
                       }
+                    </td>
+
+                    {/* SERVICES DEMANDÉS */}
+                    <td>
+                      {item.services_de_la_commune?.length
+                        ? item.services_de_la_commune.join(", ")
+                        : "-"}
+                    </td>
+
+                    {/* SITES CORRESPONDANT */}
+                    <td>
+                      {item.sites_de_la_commune?.length
+                        ? item.sites_de_la_commune.join(", ")
+                        : "-"}
                     </td>
 
                     {/* DESCRIPTION */}
@@ -400,17 +427,8 @@ const yTicks = Array.from(
                       {item.source_demande || "-"}
                     </td>
 
-                    {/* URGENCE */}
-                    <td>{item.urgence}</td>
-
-                    {/* PRIORITÉ */}
-                    <td>{item.priorite}</td>
-
                     {/* DATE DÉBUT */}
                     <td>{item.date_debut}</td>
-
-                    {/* ÉCHÉANCE */}
-                    <td>{item.echeance}</td>
 
                     {/* DATE FIN */}
                     <td>{item.date_fin}</td>

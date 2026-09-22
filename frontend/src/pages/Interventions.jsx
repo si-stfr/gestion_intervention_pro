@@ -6,7 +6,10 @@ import api from "../api/api";
 import Sidebar from "../components/Sidebar";
 import LieuMapPicker from "../components/LieuMapPicker";
 import LieuPopupButton from "../components/LieuPopupButton";
+import ServicesCommuneSelector from "../components/ServicesCommuneSelector";
 import { sortInterventions } from "../utils/sortInterventions";
+
+const today = () => new Date().toISOString().split("T")[0];
 
 import "../assets/CSS_JS/global.css";
 import "../assets/CSS_JS/Interventions.css";
@@ -69,24 +72,26 @@ export default function Interventions() {
 
   const [form, setForm] = useState({
     demandeur_nom: "",
+    demandeur_prenom: "",
+    demandeur_email: "",
+    demandeur_telephone: "",
     titre: "",
     description_de_la_panne: "",
     statut: "SIGNALE",
 
     source_demande: "Direct",
-    priorite: "Majeure",
     type_intervention: "Livraison",
     type_intervention_autre: "",
+    services_de_la_commune: [],
+    sites_de_la_commune: [],
 
     date_debut: "",
-    echeance: "",
-    date_fin: "",
+    date_fin: today(),
 
     lieu: "",
     latitude: null,
     longitude: null,
 
-    urgence: "Haute",
     technicien_id: "",
 
     // suivi technicien / manager (visible uniquement en édition d'une
@@ -196,25 +201,26 @@ export default function Interventions() {
 
     setForm({
       demandeur_nom: "",
+      demandeur_prenom: "",
+      demandeur_email: "",
+      demandeur_telephone: "",
       titre: "",
       description_de_la_panne: "",
 
       statut: "SIGNALE",
 
       source_demande: "Direct",
-      priorite: "Majeure",
       type_intervention: "Livraison",
       type_intervention_autre: "",
+      services_de_la_commune: [],
+      sites_de_la_commune: [],
 
       date_debut: "",
-      echeance: "",
-      date_fin: "",
+      date_fin: today(),
 
       lieu: "",
       latitude: null,
       longitude: null,
-
-      urgence: "Moyenne",
 
       technicien_id: "",
 
@@ -241,6 +247,16 @@ export default function Interventions() {
         return;
         }
 
+    if (!form.demandeur_prenom) {
+        alert("Veuillez saisir le prénom du demandeur");
+        return;
+        }
+
+    if (!form.demandeur_telephone) {
+        alert("Veuillez saisir le téléphone du demandeur");
+        return;
+        }
+
     if (!form.titre) {
         alert("Veuillez saisir un titre");
         return;
@@ -258,11 +274,6 @@ export default function Interventions() {
 
     if (!form.date_fin) {
         alert("Veuillez saisir une date de fin");
-        return;
-        }
-
-    if (!form.echeance) {
-        alert("Veuillez saisir une date d'échéance");
         return;
         }
 
@@ -306,9 +317,6 @@ export default function Interventions() {
 
           source_demande:
             form.source_demande === "" ? null : form.source_demande,
-
-          priorite:
-            form.priorite === "" ? null : form.priorite,
 
           type_intervention:
             form.type_intervention === "" ? null : form.type_intervention,
@@ -374,6 +382,9 @@ export default function Interventions() {
     setForm({
 
       demandeur_nom: item.demandeur_name ?? "",
+      demandeur_prenom: item.demandeur_prenom ?? "",
+      demandeur_email: item.demandeur_email ?? "",
+      demandeur_telephone: item.demandeur_telephone ?? "",
 
       titre: item.titre ?? "",
 
@@ -384,22 +395,18 @@ export default function Interventions() {
 
       source_demande: item.source_demande ?? "",
 
-      priorite: item.priorite ?? "",
-
       type_intervention:
         item.type_intervention ?? "",
 
       type_intervention_autre:
         item.type_intervention_autre ?? "",
 
+      services_de_la_commune: item.services_de_la_commune ?? [],
+      sites_de_la_commune: item.sites_de_la_commune ?? [],
+
       date_debut:
         item.date_debut
           ? item.date_debut.split("T")[0]
-          : "",
-
-      echeance:
-        item.echeance
-          ? item.echeance.split("T")[0]
           : "",
 
       date_fin:
@@ -410,8 +417,6 @@ export default function Interventions() {
       lieu: item.lieu ?? "",
       latitude: item.latitude ?? null,
       longitude: item.longitude ?? null,
-
-      urgence: item.urgence || "Moyenne",
 
       technicien_id: item.technicien_id ? Number(item.technicien_id) : "",
 
@@ -437,6 +442,9 @@ export default function Interventions() {
     setForm({
 
       demandeur_nom: item.demandeur_name ?? "",
+      demandeur_prenom: item.demandeur_prenom ?? "",
+      demandeur_email: item.demandeur_email ?? "",
+      demandeur_telephone: item.demandeur_telephone ?? "",
 
       titre: item.titre ?? "",
 
@@ -447,23 +455,21 @@ export default function Interventions() {
 
       source_demande: item.source_demande ?? "Direct",
 
-      priorite: item.priorite ?? "",
-
       type_intervention:
         item.type_intervention ?? "",
 
       type_intervention_autre:
         item.type_intervention_autre ?? "",
 
+      services_de_la_commune: item.services_de_la_commune ?? [],
+      sites_de_la_commune: item.sites_de_la_commune ?? [],
+
       date_debut: "",
-      echeance: "",
-      date_fin: "",
+      date_fin: today(),
 
       lieu: item.lieu ?? "",
       latitude: item.latitude ?? null,
       longitude: item.longitude ?? null,
-
-      urgence: item.urgence || "Moyenne",
 
       technicien_id: item.technicien_id ? Number(item.technicien_id) : "",
 
@@ -511,9 +517,6 @@ export default function Interventions() {
 
         source_demande:
           form.source_demande === "" ? null : form.source_demande,
-
-        priorite:
-          form.priorite === "" ? null : form.priorite,
 
         type_intervention:
           form.type_intervention === "" ? null : form.type_intervention,
@@ -634,7 +637,7 @@ export default function Interventions() {
               </select>
 
               {/* 2. DEMANDEUR */}
-              <label>Demandeur</label>
+              <label>Nom du Demandeur</label>
 
               <input
                 placeholder="Nom du demandeur"
@@ -643,6 +646,46 @@ export default function Interventions() {
                   setForm({
                     ...form,
                     demandeur_nom: e.target.value
+                  })
+                }
+              />
+
+              <label>Prénom du Demandeur</label>
+
+              <input
+                placeholder="Prénom du demandeur"
+                value={form.demandeur_prenom}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    demandeur_prenom: e.target.value
+                  })
+                }
+              />
+
+              <label>Email du Demandeur (Facultatif)</label>
+
+              <input
+                type="email"
+                placeholder="Email du demandeur"
+                value={form.demandeur_email}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    demandeur_email: e.target.value
+                  })
+                }
+              />
+
+              <label>Téléphone du Demandeur</label>
+
+              <input
+                placeholder="Téléphone du demandeur"
+                value={form.demandeur_telephone}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    demandeur_telephone: e.target.value
                   })
                 }
               />
@@ -695,44 +738,6 @@ export default function Interventions() {
                 <option value="Other">Autre</option>
               </select>
 
-              {/* 6. URGENCE */}
-              <label>Urgence</label>
-
-              <select
-                value={form.urgence}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    urgence: e.target.value
-                  })
-                }
-              >
-                <option>Très haute</option>
-                <option>Haute</option>
-                <option>Moyenne</option>
-                <option>Basse</option>
-                <option>Très basse</option>
-              </select>
-
-              {/* 8. PRIORITÉ */}
-              <label>Priorité</label>
-
-              <select
-                value={form.priorite}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    priorite: e.target.value
-                  })
-                }
-              >
-                <option>Majeure</option>
-                <option>Très haute</option>
-                <option>Moyenne</option>
-                <option>Basse</option>
-                <option>Très basse</option>
-              </select>
-
               {/* 9. TYPE INTERVENTION */}
               <label>Type intervention</label>
 
@@ -769,6 +774,17 @@ export default function Interventions() {
                 />
               )}
 
+              {/* SERVICES DEMANDÉS */}
+              <ServicesCommuneSelector
+                value={form.services_de_la_commune}
+                onChange={(services, sites) =>
+                  setForm({
+                    ...form,
+                    services_de_la_commune: services,
+                    sites_de_la_commune: sites,
+                  })
+                }
+              />
 
               {/*SELECTION MATERIEL*/}
 
@@ -899,20 +915,6 @@ export default function Interventions() {
                   setForm({
                     ...form,
                     date_debut: e.target.value
-                  })
-                }
-              />
-
-              {/* 12. ÉCHÉANCE */}
-              <label>Échéance</label>
-
-              <input
-                type="date"
-                value={form.echeance}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    echeance: e.target.value
                   })
                 }
               />
@@ -1086,16 +1088,18 @@ export default function Interventions() {
                 <tr>
                   <th>Statut</th>
                   <th>Demandeur</th>
+                  <th>Prénom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
                   <th>Titre</th>
                   <th>Type intervention</th>
                   <th>Type autre</th>
+                  <th>Services demandés</th>
+                  <th>Sites correspondant</th>
                   <th>Description</th>
                   <th>Matériel concerné</th>
                   <th>Source</th>
-                  <th>Urgence</th>
-                  <th>Priorité</th>
                   <th>Date de début</th>
-                  <th>Échéance</th>
                   <th>Date de fin</th>
                   <th>Lieu</th>
                   <th>Technicien</th>
@@ -1132,6 +1136,15 @@ export default function Interventions() {
                       {item.demandeur_name || "-"}
                     </td>
 
+                    {/* PRÉNOM */}
+                    <td>{item.demandeur_prenom || "-"}</td>
+
+                    {/* EMAIL */}
+                    <td>{item.demandeur_email || "-"}</td>
+
+                    {/* TÉLÉPHONE */}
+                    <td>{item.demandeur_telephone || "-"}</td>
+
                     {/* TITRE */}
                     <td>{item.titre}</td>
 
@@ -1146,6 +1159,20 @@ export default function Interventions() {
                         item.type_intervention_autre
                         || "-"
                       }
+                    </td>
+
+                    {/* SERVICES DEMANDÉS */}
+                    <td>
+                      {item.services_de_la_commune?.length
+                        ? item.services_de_la_commune.join(", ")
+                        : "-"}
+                    </td>
+
+                    {/* SITES CORRESPONDANT */}
+                    <td>
+                      {item.sites_de_la_commune?.length
+                        ? item.sites_de_la_commune.join(", ")
+                        : "-"}
                     </td>
 
                     {/* DESCRIPTION */}
@@ -1170,17 +1197,8 @@ export default function Interventions() {
                       {item.source_demande || "-"}
                     </td>
 
-                    {/* URGENCE */}
-                    <td>{item.urgence}</td>
-
-                    {/* PRIORITÉ */}
-                    <td>{item.priorite}</td>
-
                     {/* DATE DÉBUT */}
                     <td>{item.date_debut}</td>
-
-                    {/* ÉCHÉANCE */}
-                    <td>{item.echeance}</td>
 
                     {/* DATE FIN */}
                     <td>{item.date_fin}</td>

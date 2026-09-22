@@ -1,4 +1,5 @@
 import base64
+import json
 import re
 from datetime import date, datetime, timedelta
 from sqlalchemy.orm import Session
@@ -89,17 +90,12 @@ def compute_statut(intervention):
     if statut in ["ABOUTI", "IMPOSSIBLE"]:
         return statut
 
-    echeance = intervention.echeance
-
     today = datetime.now().date()
 
     date_fin = to_date(intervention.date_fin)
     date_debut = to_date(intervention.date_debut)
 
     if date_fin and today > date_fin:
-        return "EN_RETARD"
-
-    if echeance and today > echeance:
         return "EN_RETARD"
 
     if statut == "SIGNALE" and date_debut and today >= date_debut:
@@ -400,6 +396,10 @@ def create_intervention(db: Session, data: dict):
 
     materiels_data = clean_data.pop("materiels", None)
     materiels_ids = clean_data.pop("materiels_ids", None)
+
+    for field in ["services_de_la_commune", "sites_de_la_commune"]:
+        if isinstance(clean_data.get(field), list):
+            clean_data[field] = json.dumps(clean_data[field], ensure_ascii=False)
 
     new_intervention = Intervention(**clean_data)
 

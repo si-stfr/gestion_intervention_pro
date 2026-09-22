@@ -66,17 +66,13 @@ export default function TechnicienDashboard() {
       description_de_la_panne: "",
 
       source_demande: "",
-      priorite: "",
       type_intervention: "",
       type_intervention_autre: "",
 
       date_debut: "",
-      echeance: "",
       date_fin: "",
 
       lieu: "",
-
-      urgence: "Moyenne",
 
       technicien_id: "",
 
@@ -177,17 +173,13 @@ export default function TechnicienDashboard() {
         description_de_la_panne: "",
 
         source_demande: "",
-        priorite: "",
         type_intervention: "",
         type_intervention_autre: "",
 
         date_debut: "",
-        echeance: "",
         date_fin: "",
 
         lieu: "",
-
-        urgence: "Moyenne",
 
         technicien_id: "",
 
@@ -222,13 +214,9 @@ export default function TechnicienDashboard() {
 
       date_debut: item.date_debut ? item.date_debut.split("T")[0]: "",
 
-      echeance: item.echeance ? item.echeance.split("T")[0]: "",
-
       date_fin: item.date_fin ? item.date_fin.split("T")[0]: "",
 
       lieu: item.lieu,
-
-      urgence: item.urgence,
 
       diagnostique_effectue: item.diagnostique_effectue || "",
 
@@ -353,16 +341,6 @@ export default function TechnicienDashboard() {
                     value={form.date_debut}
                     onChange={(e) =>
                     setForm({ ...form, date_debut: e.target.value })
-                    }
-                />
-
-                {/* 2. DATE ÉCHÉANCE */}
-                <label>Date d'échéance</label>
-                <input
-                    type="date"
-                    value={form.echeance}
-                    onChange={(e) =>
-                    setForm({ ...form, echeance: e.target.value })
                     }
                 />
 
@@ -491,19 +469,22 @@ export default function TechnicienDashboard() {
                 <tr>
                     <th>Statut</th>
                     <th>Demandeur</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
                     <th>Titre</th>
                      <th>Type intervention</th>
                     <th>Type autre</th>
+                    <th>Services demandés</th>
+                    <th>Sites correspondant</th>
                     <th>Description</th>
                     <th>Matériel concerné</th>
                     <th>Source de la demande</th>
-                    <th>Urgence</th>
-                    <th>Priorité</th>
                     <th>Date début</th>
-                    <th>Échéance</th>
                     <th>Date fin</th>
                     <th>Lieu</th>
                     <th>Technicien</th>
+                    <th>Diagnostique effectué</th>
                     <th>Actions réalisées</th>
                     <th>Résultat de l'intervention</th>
                     <th>Manager</th>
@@ -531,6 +512,15 @@ export default function TechnicienDashboard() {
                         {item.demandeur_name || "-"}
                     </td>
 
+                    {/* Prénom */}
+                    <td>{item.demandeur_prenom || "-"}</td>
+
+                    {/* Email */}
+                    <td>{item.demandeur_email || "-"}</td>
+
+                    {/* Téléphone */}
+                    <td>{item.demandeur_telephone || "-"}</td>
+
                     {/* 3. Titre */}
                     <td>{item.titre}</td>
 
@@ -539,6 +529,20 @@ export default function TechnicienDashboard() {
 
                     {/* 10. Type autre */}
                     <td>{item.type_intervention_autre}</td>
+
+                    {/* Services demandés */}
+                    <td>
+                        {item.services_de_la_commune?.length
+                            ? item.services_de_la_commune.join(", ")
+                            : "-"}
+                    </td>
+
+                    {/* Sites correspondant */}
+                    <td>
+                        {item.sites_de_la_commune?.length
+                            ? item.sites_de_la_commune.join(", ")
+                            : "-"}
+                    </td>
 
                     {/* 4. Description */}
                     <td>{item.description_de_la_panne}</td>
@@ -555,17 +559,8 @@ export default function TechnicienDashboard() {
                     {/* 5. Source */}
                     <td>{item.source_demande || "-"}</td>
 
-                    {/* 6. Urgence */}
-                    <td>{item.urgence}</td>
-
-                    {/* 8. Priorité */}
-                    <td>{item.priorite}</td>
-
                     {/* 11. Date début */}
                     <td>{item.date_debut}</td>
-
-                    {/* 12. Échéance */}
-                    <td>{item.echeance}</td>
 
                     {/* 13. Date fin */}
                     <td>{item.date_fin}</td>
@@ -582,6 +577,9 @@ export default function TechnicienDashboard() {
                             || "-"
                         }
                     </td>
+
+                    {/* Diagnostique effectué */}
+                    <td>{item.diagnostique_effectue || "-"}</td>
 
                     {/* 18. Actions réalisées */}
                     <td>{item.actions_realisees || "-"}</td>

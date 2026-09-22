@@ -15,7 +15,6 @@ class InterventionBase(BaseModel):
     Date_de_la_demande: date
 
     date_debut: date
-    echeance: date
     date_fin: date
 
     lieu: str | None = None
@@ -24,10 +23,6 @@ class InterventionBase(BaseModel):
 
     # Source de la demande
     source_demande: str
-
-    # Niveau d'importance
-    urgence: str
-    priorite: str
 
     # Type intervention
     type_intervention: str
@@ -79,7 +74,6 @@ class InterventionTechnicienUpdate(BaseModel):
     Champs modifiables par le technicien uniquement
     """
 
-    echeance: Optional[date] = None
     date_fin: Optional[date] = None
     date_debut: Optional[date] = None
 
@@ -115,15 +109,12 @@ class InterventionResponse(BaseModel):
 
     # ===== CLASSIFICATION =====
     source_demande: str
-    urgence: str
-    priorite: str
 
     type_intervention: str
     type_autre: Optional[str] = None
 
     # ===== DATES =====
     date_debut: date
-    echeance: date
     date_fin: Optional[date] = None
 
     created_at: Optional[datetime] = None
@@ -155,14 +146,13 @@ class InterventionUpdate(BaseModel):
 
     statut: Optional[str] = None
     source_demande: Optional[str] = None
-    urgence: Optional[str] = None
-    priorite: Optional[str] = None
 
     type_intervention: Optional[str] = None
     type_intervention_autre: Optional[str] = None
+    services_de_la_commune: Optional[List[str]] = None
+    sites_de_la_commune: Optional[List[str]] = None
 
     date_debut: Optional[str] = None
-    echeance: Optional[str] = None
     date_fin: Optional[str] = None
 
     lieu: str | None = None
@@ -171,6 +161,9 @@ class InterventionUpdate(BaseModel):
     piece_jointe: Optional[str] = None
 
     demandeur_nom: Optional[str] = None
+    demandeur_prenom: Optional[str] = None
+    demandeur_email: Optional[str] = None
+    demandeur_telephone: Optional[str] = None
 
     # champs technicien / manager (édition admin sur une intervention en cours)
     diagnostique_effectue: Optional[str] = None

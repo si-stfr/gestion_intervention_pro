@@ -100,6 +100,89 @@ def ensure_intervention_columns():
                 pass
 
 
+def ensure_demandeur_contact_columns():
+    """Ajoute prénom / email / téléphone du demandeur, juste après demandeur_nom."""
+    if not DATABASE_URL:
+        return
+
+    # Ajoutés dans l'ordre inverse pour obtenir : nom, prénom, email, téléphone
+    columns_to_add = [
+        ("demandeur_telephone", "VARCHAR(50) NULL"),
+        ("demandeur_email", "VARCHAR(255) NULL"),
+        ("demandeur_prenom", "VARCHAR(255) NULL"),
+    ]
+
+    with engine.begin() as conn:
+        for column_name, ddl_type in columns_to_add:
+            try:
+                exists = conn.execute(
+                    text(
+                        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = :col"
+                    ),
+                    {"col": column_name},
+                ).scalar()
+                if not exists:
+                    conn.execute(
+                        text(
+                            f"ALTER TABLE interventions ADD COLUMN {column_name} {ddl_type} AFTER demandeur_nom"
+                        )
+                    )
+            except Exception:
+                pass
+
+
+def ensure_services_commune_columns():
+    """Ajoute services_de_la_commune / sites_de_la_commune, juste après type_intervention_autre."""
+    if not DATABASE_URL:
+        return
+
+    # Ajoutés dans l'ordre inverse pour obtenir : type_intervention_autre, services, sites
+    columns_to_add = [
+        ("sites_de_la_commune", "TEXT NULL"),
+        ("services_de_la_commune", "TEXT NULL"),
+    ]
+
+    with engine.begin() as conn:
+        for column_name, ddl_type in columns_to_add:
+            try:
+                exists = conn.execute(
+                    text(
+                        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = :col"
+                    ),
+                    {"col": column_name},
+                ).scalar()
+                if not exists:
+                    conn.execute(
+                        text(
+                            f"ALTER TABLE interventions ADD COLUMN {column_name} {ddl_type} AFTER type_intervention_autre"
+                        )
+                    )
+            except Exception:
+                pass
+
+
+def ensure_urgence_priorite_echeance_dropped():
+    """Supprime les colonnes urgence, priorite et echeance, devenues inutiles."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        for column_name in ["urgence", "priorite", "echeance"]:
+            try:
+                exists = conn.execute(
+                    text(
+                        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = :col"
+                    ),
+                    {"col": column_name},
+                ).scalar()
+                if exists:
+                    conn.execute(
+                        text(f"ALTER TABLE interventions DROP COLUMN {column_name}")
+                    )
+            except Exception:
+                pass
+
+
 def ensure_demandeur_id_nullable():
     """demandeur_id n'est plus renseigné à la création (remplacé par demandeur_nom texte libre)."""
     if not DATABASE_URL:

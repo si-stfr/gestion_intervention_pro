@@ -140,16 +140,18 @@ export default function ManagerDashboard() {
                                 <tr>
                                     <th>Statut</th>
                                     <th>Demandeur</th>
+                                    <th>Prénom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
                                     <th>Titre</th>
                                     <th>Type d'intervention</th>
                                     <th>Autre type d'intervention</th>
+                                    <th>Services demander</th>
+                                    <th>Sites correspondant</th>
                                     <th>Description</th>
                                     <th>Matériel concerné</th>
                                     <th>Source de la demande</th>
-                                    <th>Urgence</th>
-                                    <th>Priorité</th>
                                     <th>Date de début</th>
-                                    <th>Date d'échéance</th>
                                     <th>Date de fin</th>
                                     <th>Lieu</th>
                                     <th>Technicien</th>
@@ -182,6 +184,15 @@ export default function ManagerDashboard() {
                                             {item.demandeur_name || "-"}
                                         </td>
 
+                                        {/* PRÉNOM */}
+                                        <td>{item.demandeur_prenom || "-"}</td>
+
+                                        {/* EMAIL */}
+                                        <td>{item.demandeur_email || "-"}</td>
+
+                                        {/* TÉLÉPHONE */}
+                                        <td>{item.demandeur_telephone || "-"}</td>
+
                                         {/* 3 TITRE */}
                                         <td>{item.titre}</td>
 
@@ -190,6 +201,20 @@ export default function ManagerDashboard() {
 
                                         {/* 10 AUTRE TYPE */}
                                         <td>{item.type_intervention_autre}</td>
+
+                                        {/* SERVICES DEMANDÉS */}
+                                        <td>
+                                            {item.services_de_la_commune?.length
+                                                ? item.services_de_la_commune.join(", ")
+                                                : "-"}
+                                        </td>
+
+                                        {/* SITES CORRESPONDANT */}
+                                        <td>
+                                            {item.sites_de_la_commune?.length
+                                                ? item.sites_de_la_commune.join(", ")
+                                                : "-"}
+                                        </td>
 
                                         {/* 4 DESCRIPTION */}
                                         <td>{item.description_de_la_panne}</td>
@@ -206,17 +231,8 @@ export default function ManagerDashboard() {
                                         {/* 5 SOURCE */}
                                         <td>{item.source_demande || "-"}</td>
 
-                                        {/* 6 URGENCE */}
-                                        <td>{item.urgence}</td>
-
-                                        {/* 8 PRIORITÉ */}
-                                        <td>{item.priorite}</td>
-
                                         {/* 11 DATE DÉBUT */}
                                         <td>{item.date_debut}</td>
-
-                                        {/* 12 ÉCHÉANCE */}
-                                        <td>{item.echeance}</td>
 
                                         {/* 13 DATE FIN */}
                                         <td>{item.date_fin}</td>

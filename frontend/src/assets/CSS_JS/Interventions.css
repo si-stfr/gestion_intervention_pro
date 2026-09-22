@@ -1017,6 +1017,32 @@ td {
   background-color: #0074c75b;
 }
 
+.service-result {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.service-result:hover {
+  background-color: #0074c75b;
+}
+
+.service-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  background-color: #0074c71a;
+  border-radius: 8px;
+}
+
+.sites-concernes-info {
+  font-weight: bold;
+  color: #0074c7;
+  margin-top: 6px;
+}
+
 
 .materiel-result > div {
   overflow: hidden;

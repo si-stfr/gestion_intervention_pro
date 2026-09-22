@@ -44,22 +44,6 @@ class SourceDemande(str, enum.Enum):
     WRITTEN = "Written"
 
 
-class Urgence(str, enum.Enum):
-    TRES_HAUTE = "Très haute"
-    HAUTE = "Haute"
-    MOYENNE = "Moyenne"
-    BASSE = "Basse"
-    TRES_BASSE = "Très basse"
-
-
-class Priorite(str, enum.Enum):
-    MAJEURE = "Majeure"
-    TRES_HAUTE = "Très haute"
-    MOYENNE = "Moyenne"
-    BASSE = "Basse"
-    TRES_BASSE = "Très basse"
-
-
 class TypeIntervention(str, enum.Enum):
     LIVRAISON = "Livraison"
     INSTALLATION = "Installation"
@@ -93,6 +77,9 @@ class Intervention(Base):
     cree_par_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     # nom du demandeur en texte libre (n'est pas forcément un compte du système)
     demandeur_nom = Column(String(255), nullable=True)
+    demandeur_prenom = Column(String(255), nullable=True)
+    demandeur_email = Column(String(255), nullable=True)
+    demandeur_telephone = Column(String(50), nullable=True)
 
     titre = Column(String(255), nullable=False)
 
@@ -107,21 +94,16 @@ class Intervention(Base):
         Enum(SourceDemande, values_callable=lambda obj: [e.value for e in obj])
     )
 
-    urgence = Column(Enum(Urgence, values_callable=lambda obj: [e.value for e in obj]))
-
-    priorite = Column(
-        Enum(Priorite, values_callable=lambda obj: [e.value for e in obj])
-    )
-
     type_intervention = Column(
         Enum(TypeIntervention, values_callable=lambda obj: [e.value for e in obj])
     )
 
     type_intervention_autre = Column(String(255))
 
-    date_debut = Column(Date, nullable=False)
+    services_de_la_commune = Column(Text, nullable=True)
+    sites_de_la_commune = Column(Text, nullable=True)
 
-    echeance = Column(Date, nullable=False)
+    date_debut = Column(Date, nullable=False)
 
     date_fin = Column(Date)
 
