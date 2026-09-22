@@ -123,8 +123,20 @@ def request_password_reset(db, email: str):
 # =========================================================
 # SUPPRESSION AUTOMATIQUE DES TOKENS EXPIRÉS
 # =========================================================
+_last_token_cleanup_run = None
+TOKEN_CLEANUP_THROTTLE = timedelta(hours=1)
+
+
 def cleanup_expired_tokens(db):
+    global _last_token_cleanup_run
+
     now = datetime.utcnow()
+    if (
+        _last_token_cleanup_run
+        and now - _last_token_cleanup_run < TOKEN_CLEANUP_THROTTLE
+    ):
+        return
+    _last_token_cleanup_run = now
 
     db.query(RefreshToken).filter(RefreshToken.expires_at < now).delete(
         synchronize_session=False

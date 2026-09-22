@@ -349,7 +349,18 @@ def update_intervention(db: Session, intervention: Intervention, data: dict):
 # =========================================================
 # SUPPRESSION AUTOMATIQUE DES INTERVENTIONS TERMINÉES (> 1 AN)
 # =========================================================
+_last_cleanup_run = None
+CLEANUP_THROTTLE = timedelta(hours=1)
+
+
 def cleanup_old_completed_interventions(db: Session):
+    global _last_cleanup_run
+
+    now = datetime.utcnow()
+    if _last_cleanup_run and now - _last_cleanup_run < CLEANUP_THROTTLE:
+        return
+    _last_cleanup_run = now
+
     cutoff = date.today() - timedelta(days=365)
 
     old_interventions = (

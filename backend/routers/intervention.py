@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from datetime import datetime
 from sqlalchemy import select
 
@@ -35,7 +35,28 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
     cleanup_old_completed_interventions(db)
 
-    interventions = db.query(Intervention).all()
+    interventions = (
+        db.query(Intervention)
+        .options(
+            joinedload(Intervention.demandeur),
+            joinedload(Intervention.technicien),
+            joinedload(Intervention.manager),
+            selectinload(Intervention.materiels),
+        )
+        .all()
+    )
+
+    all_quantites_rows = db.execute(
+        select(
+            intervention_materiel.c.intervention_id,
+            intervention_materiel.c.materiel_id,
+            intervention_materiel.c.quantite,
+        )
+    ).all()
+
+    quantites_par_intervention = {}
+    for intervention_id, materiel_id, qte in all_quantites_rows:
+        quantites_par_intervention.setdefault(intervention_id, {})[materiel_id] = qte
 
     result = []
 
@@ -43,13 +64,7 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
         statut = compute_statut(i)
 
-        rows = db.execute(
-            select(
-                intervention_materiel.c.materiel_id, intervention_materiel.c.quantite
-            ).where(intervention_materiel.c.intervention_id == i.id)
-        ).all()
-
-        quantites = {materiel_id: qte for materiel_id, qte in rows}
+        quantites = quantites_par_intervention.get(i.id, {})
         result.append(
             {
                 # =========================
