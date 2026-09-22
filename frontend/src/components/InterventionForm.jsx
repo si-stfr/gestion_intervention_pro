@@ -18,7 +18,6 @@ export default function InterventionForm({
     source_demande: "Direct",
 
     urgence: "Moyenne",
-    impact: "Moyen",
     priorite: "Moyenne",
 
     type_intervention: "Maintenance",
@@ -211,23 +210,6 @@ export default function InterventionForm({
             <option>Haute</option>
             <option>Basse</option>
             <option>Très basse</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Impact</label>
-
-          <select
-            value={form.impact}
-            onChange={(e) =>
-              handleChange("impact", e.target.value)
-            }
-          >
-            <option>Très haut</option>
-            <option>Haut</option>
-            <option>Moyen</option>
-            <option>Bas</option>
-            <option>Très bas</option>
           </select>
         </div>
 

@@ -6,7 +6,7 @@ from database import (
     ensure_piece_jointe_column,
     ensure_intervention_columns,
     ensure_demandeur_id_nullable,
-    ensure_impact_nullable,
+    ensure_impact_dropped,
     ensure_actions_autre_dropped,
     SessionLocal,
 )
@@ -50,7 +50,7 @@ Base.metadata.create_all(bind=engine)
 ensure_piece_jointe_column()
 ensure_intervention_columns()
 ensure_demandeur_id_nullable()
-ensure_impact_nullable()
+ensure_impact_dropped()
 ensure_actions_autre_dropped()
 
 # =========================================================

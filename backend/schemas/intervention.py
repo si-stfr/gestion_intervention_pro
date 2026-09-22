@@ -27,7 +27,6 @@ class InterventionBase(BaseModel):
 
     # Niveau d'importance
     urgence: str
-    impact: str
     priorite: str
 
     # Type intervention
@@ -117,7 +116,6 @@ class InterventionResponse(BaseModel):
     # ===== CLASSIFICATION =====
     source_demande: str
     urgence: str
-    impact: str
     priorite: str
 
     type_intervention: str
@@ -158,7 +156,6 @@ class InterventionUpdate(BaseModel):
     statut: Optional[str] = None
     source_demande: Optional[str] = None
     urgence: Optional[str] = None
-    impact: Optional[str] = None
     priorite: Optional[str] = None
 
     type_intervention: Optional[str] = None

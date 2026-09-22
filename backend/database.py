@@ -120,23 +120,20 @@ def ensure_demandeur_id_nullable():
             pass
 
 
-def ensure_impact_nullable():
-    """impact n'est plus renseigné par les formulaires (retiré de l'UI) mais reste en base."""
+def ensure_impact_dropped():
+    """Supprime la colonne impact, devenue inutile."""
     if not DATABASE_URL:
         return
 
     with engine.begin() as conn:
         try:
-            is_nullable = conn.execute(
+            exists = conn.execute(
                 text(
-                    "SELECT IS_NULLABLE, COLUMN_TYPE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'impact'"
+                    "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'impact'"
                 )
-            ).first()
-            if is_nullable and is_nullable[0] == "NO":
-                column_type = is_nullable[1]
-                conn.execute(
-                    text(f"ALTER TABLE interventions MODIFY COLUMN impact {column_type} NULL")
-                )
+            ).scalar()
+            if exists:
+                conn.execute(text("ALTER TABLE interventions DROP COLUMN impact"))
         except Exception:
             pass
 

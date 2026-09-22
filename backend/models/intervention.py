@@ -52,14 +52,6 @@ class Urgence(str, enum.Enum):
     TRES_BASSE = "Très basse"
 
 
-class Impact(str, enum.Enum):
-    TRES_HAUT = "Très haut"
-    HAUT = "Haut"
-    MOYEN = "Moyen"
-    BAS = "Bas"
-    TRES_BAS = "Très bas"
-
-
 class Priorite(str, enum.Enum):
     MAJEURE = "Majeure"
     TRES_HAUTE = "Très haute"
@@ -116,8 +108,6 @@ class Intervention(Base):
     )
 
     urgence = Column(Enum(Urgence, values_callable=lambda obj: [e.value for e in obj]))
-
-    impact = Column(Enum(Impact, values_callable=lambda obj: [e.value for e in obj]))
 
     priorite = Column(
         Enum(Priorite, values_callable=lambda obj: [e.value for e in obj])

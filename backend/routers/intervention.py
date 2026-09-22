@@ -84,7 +84,6 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # =========================
                 "source_demande": i.source_demande.value if i.source_demande else None,
                 "urgence": i.urgence.value if i.urgence else None,
-                "impact": i.impact.value if i.impact else None,
                 "priorite": i.priorite.value if i.priorite else None,
                 "type_intervention": (
                     i.type_intervention.value if i.type_intervention else None
