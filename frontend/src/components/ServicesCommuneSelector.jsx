@@ -21,7 +21,7 @@ export default function ServicesCommuneSelector({ value = [], onChange }) {
         className="mat-select-toggle"
         onClick={() => setOpen((v) => !v)}
       >
-        {open ? "▲" : "▼"} Services de la commune concernés
+        {open ? "▲" : "▼"} Services de la commune disponibles
         {value.length > 0 ? ` (${value.length})` : ""}
       </button>
 
