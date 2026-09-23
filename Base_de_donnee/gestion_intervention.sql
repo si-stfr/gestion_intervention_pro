@@ -86,7 +86,11 @@ CREATE TABLE `interventions` (
   `manager_id` int(11) DEFAULT NULL,
   `date_verification` date DEFAULT NULL,
   `lock_statut` tinyint(1) DEFAULT 0,
-  `cree_par_id` int(11) DEFAULT NULL
+  `cree_par_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `demandeur_id` (`demandeur_id`),
+  KEY `technicien_id` (`technicien_id`),
+  KEY `fk_intervention_manager` (`manager_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
