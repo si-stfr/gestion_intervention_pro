@@ -13,7 +13,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const DEFAULT_CENTER = [46.6034, 1.8883]; // centre approximatif de la France
+const DEFAULT_CENTER = [16.258666, -61.268513]; // Guadeloupe
 const DEFAULT_ZOOM = 5;
 const SELECTED_ZOOM = 15;
 
