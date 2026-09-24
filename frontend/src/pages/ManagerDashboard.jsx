@@ -144,11 +144,11 @@ export default function ManagerDashboard() {
                                     <th>Email</th>
                                     <th>Téléphone</th>
                                     <th>Titre</th>
+                                    <th>Description</th>
                                     <th>Type d'intervention</th>
                                     <th>Autre type d'intervention</th>
                                     <th>Services demander</th>
                                     <th>Sites correspondant</th>
-                                    <th>Description</th>
                                     <th>Matériel concerné</th>
                                     <th>Source de la demande</th>
                                     <th>Date de début</th>
@@ -196,6 +196,9 @@ export default function ManagerDashboard() {
                                         {/* 3 TITRE */}
                                         <td>{item.titre}</td>
 
+                                        {/* 4 DESCRIPTION */}
+                                        <td>{item.description_de_la_panne}</td>
+
                                         {/* 9 TYPE INTERVENTION */}
                                         <td>{item.type_intervention}</td>
 
@@ -215,9 +218,6 @@ export default function ManagerDashboard() {
                                                 ? item.sites_de_la_commune.join(", ")
                                                 : "-"}
                                         </td>
-
-                                        {/* 4 DESCRIPTION */}
-                                        <td>{item.description_de_la_panne}</td>
 
                                         {/*MATERIEL*/}
                                         <td>

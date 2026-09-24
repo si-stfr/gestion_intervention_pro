@@ -332,11 +332,11 @@ const yTicks = Array.from(
                   <th>Email</th>
                   <th>Téléphone</th>
                   <th>Titre</th>
+                  <th>Description</th>
                   <th>Type intervention</th>
                   <th>Type autre</th>
                   <th>Services demandés</th>
                   <th>Sites correspondant</th>
-                  <th>Description</th>
                   <th>Matériel concerné</th>
                   <th>Source</th>
                   <th>Date de début</th>
@@ -388,6 +388,11 @@ const yTicks = Array.from(
                     {/* TITRE */}
                     <td>{item.titre}</td>
 
+                    {/* DESCRIPTION */}
+                    <td>
+                      {item.description_de_la_panne}
+                    </td>
+
                     {/* TYPE INTERVENTION */}
                     <td>
                       {item.type_intervention}
@@ -413,11 +418,6 @@ const yTicks = Array.from(
                       {item.sites_de_la_commune?.length
                         ? item.sites_de_la_commune.join(", ")
                         : "-"}
-                    </td>
-
-                    {/* DESCRIPTION */}
-                    <td>
-                      {item.description_de_la_panne}
                     </td>
 
                      {/*MATERIEL*/}
