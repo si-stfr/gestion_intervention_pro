@@ -45,6 +45,9 @@ class SourceDemande(str, enum.Enum):
 
 
 class TypeIntervention(str, enum.Enum):
+    INTERVENTION_EAU = "Intervention Eau"
+    INTERVENTION_ELECTRICITE = "Intervention Electricité"
+    INTERVENTION_BATIMENTAIRE = "Intervention Bâtimentaire"
     LIVRAISON = "Livraison"
     INSTALLATION = "Installation"
     LIVRAISON_INSTALLATION = "Livraison + Installation"

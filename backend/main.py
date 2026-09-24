@@ -11,6 +11,7 @@ from database import (
     ensure_demandeur_contact_columns,
     ensure_services_commune_columns,
     ensure_urgence_priorite_echeance_dropped,
+    ensure_type_intervention_values,
     SessionLocal,
 )
 from database import engine
@@ -58,6 +59,7 @@ ensure_actions_autre_dropped()
 ensure_demandeur_contact_columns()
 ensure_services_commune_columns()
 ensure_urgence_priorite_echeance_dropped()
+ensure_type_intervention_values()
 
 # =========================================================
 # NETTOYAGE DES INTERVENTIONS TERMINÉES DE PLUS D'1 AN

@@ -8,6 +8,7 @@ import LieuMapPicker from "../components/LieuMapPicker";
 import LieuPopupButton from "../components/LieuPopupButton";
 import ServicesCommuneSelector from "../components/ServicesCommuneSelector";
 import { sortInterventions } from "../utils/sortInterventions";
+import { getAvailableTechniciens } from "../utils/technicienAvailability";
 
 const today = () => new Date().toISOString().split("T")[0];
 
@@ -85,7 +86,7 @@ export default function Interventions() {
     services_de_la_commune: [],
     sites_de_la_commune: [],
 
-    date_debut: "",
+    date_debut: today(),
     date_fin: today(),
 
     lieu: "",
@@ -102,6 +103,14 @@ export default function Interventions() {
     commentaire: "",
     manager_id: "",
   });
+
+  const availableTechniciens = getAvailableTechniciens(
+    techniciens,
+    form.date_debut,
+    form.date_fin,
+    interventions,
+    editId
+  );
 
   useEffect(() => {
 
@@ -215,7 +224,7 @@ export default function Interventions() {
       services_de_la_commune: [],
       sites_de_la_commune: [],
 
-      date_debut: "",
+      date_debut: today(),
       date_fin: today(),
 
       lieu: "",
@@ -254,6 +263,11 @@ export default function Interventions() {
 
     if (!form.demandeur_telephone) {
         alert("Veuillez saisir le téléphone du demandeur");
+        return;
+        }
+
+    if (!form.demandeur_email) {
+        alert("Veuillez saisir l'email du demandeur");
         return;
         }
 
@@ -464,7 +478,7 @@ export default function Interventions() {
       services_de_la_commune: item.services_de_la_commune ?? [],
       sites_de_la_commune: item.sites_de_la_commune ?? [],
 
-      date_debut: "",
+      date_debut: today(),
       date_fin: today(),
 
       lieu: item.lieu ?? "",
@@ -663,7 +677,7 @@ export default function Interventions() {
                 }
               />
 
-              <label>Email du Demandeur (Facultatif)</label>
+              <label>Email du Demandeur</label>
 
               <input
                 type="email"
@@ -751,6 +765,9 @@ export default function Interventions() {
                   })
                 }
               >
+                <option>Intervention Eau</option>
+                <option>Intervention Electricité</option>
+                <option>Intervention Bâtimentaire</option>
                 <option>Livraison</option>
                 <option>Installation</option>
                 <option>Livraison + Installation</option>
@@ -966,11 +983,18 @@ export default function Interventions() {
                   -- Choisir un technicien --
                 </option>
 
-                {techniciens.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.username}
-                  </option>
-                ))}
+                {techniciens.map((u) => {
+                  const dejaAssigne = Number(form.technicien_id) === Number(u.id);
+                  const disponible = dejaAssigne || availableTechniciens.some((a) => a.id === u.id);
+
+                  if (!disponible) return null;
+
+                  return (
+                    <option key={u.id} value={u.id}>
+                      {u.username}
+                    </option>
+                  );
+                })}
               </select>
 
               {/* INFOS TECHNICIEN / MANAGER (intervention en cours de traitement) */}
@@ -1242,6 +1266,23 @@ export default function Interventions() {
                             }
                           >
                             Modifier
+                          </button>
+                        )}
+
+                        {item.statut === "ABOUTI" && (
+                          <button
+                            className="btn-imprimer"
+                            onClick={() =>
+                              navigate(
+                                `/interventions/imprimer?titre=${encodeURIComponent(
+                                  item.titre
+                                )}&typeIntervention=${encodeURIComponent(
+                                  item.type_intervention || ""
+                                )}`
+                              )
+                            }
+                          >
+                            Imprimer
                           </button>
                         )}
 

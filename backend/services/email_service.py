@@ -1,9 +1,19 @@
+import base64
 import os
 import smtplib
 from email.message import EmailMessage
 
 
-def send_email(to_email: str, subject: str, html_body: str, text_body: str | None = None):
+def send_email(
+    to_email: str,
+    subject: str,
+    html_body: str,
+    text_body: str | None = None,
+    image_attachment: dict | None = None,
+):
+    """
+    image_attachment (optionnel) : {"filename": str, "content_base64": str, "subtype": "png"|"jpeg"}
+    """
     mail_server = os.getenv("MAIL_SERVER")
     mail_port = int(os.getenv("MAIL_PORT", "587"))
     mail_username = os.getenv("MAIL_USERNAME")
@@ -26,6 +36,18 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str | Non
     message["To"] = to_email
     message.set_content(text_body or "Votre client email ne supporte pas le HTML.")
     message.add_alternative(html_body, subtype="html")
+
+    if image_attachment:
+        try:
+            content = base64.b64decode(image_attachment["content_base64"])
+            message.add_attachment(
+                content,
+                maintype="image",
+                subtype=image_attachment.get("subtype", "png"),
+                filename=image_attachment.get("filename", "intervention.png"),
+            )
+        except Exception:
+            pass
 
     with smtplib.SMTP(mail_server, mail_port) as server:
         server.starttls()

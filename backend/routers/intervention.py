@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session, joinedload, selectinload
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy import select
 import json
 
@@ -18,11 +18,13 @@ from services.intervention_service import (
     update_intervention,
     assign_technicien,
     is_technicien_available,
+    TECHNICIEN_BUFFER_DAYS,
     compute_statut,
     send_to_manager,
     validate_intervention,
     normalize_piece_jointe,
     cleanup_old_completed_interventions,
+    send_completion_notification_email,
 )
 
 router = APIRouter(prefix="/intervention", tags=["Intervention"])
@@ -237,8 +239,17 @@ def create(data: dict, db: Session = Depends(get_db), user=Depends(get_current_u
     # (indépendant du "Demandeur" texte libre saisi dans le formulaire)
     data["cree_par_id"] = user.id
 
+    # seuls le Technicien et l'Admin peuvent choisir les dates de début/fin
+    if user.profil.value == "INTERVENANT":
+        today_str = date.today().isoformat()
+        data["date_debut"] = today_str
+        data["date_fin"] = today_str
+
     # création via service
-    intervention = create_intervention(db, data)
+    try:
+        intervention = create_intervention(db, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return intervention
 
@@ -263,6 +274,11 @@ def update(
 
     update_data = data.model_dump(exclude_unset=True, exclude_none=True)
 
+    # seuls le Technicien et l'Admin peuvent modifier les dates de début/fin
+    if user.profil.value == "INTERVENANT":
+        update_data.pop("date_debut", None)
+        update_data.pop("date_fin", None)
+
     # Une intervention "En attente de validation" doit toujours avoir un manager
     # assigné, sinon elle reste invisible/inaccessible pour tout manager.
     resulting_statut = update_data.get("statut", intervention.statut)
@@ -276,10 +292,44 @@ def update(
             detail="Un manager doit être assigné pour mettre une intervention en attente de validation",
         )
 
+    if (
+        "technicien_id" in update_data
+        and update_data["technicien_id"] != intervention.technicien_id
+    ):
+        resulting_date_debut = update_data.get("date_debut", intervention.date_debut)
+        resulting_date_fin = update_data.get("date_fin", intervention.date_fin)
+        if not is_technicien_available(
+            db,
+            update_data["technicien_id"],
+            resulting_date_debut,
+            resulting_date_fin,
+            exclude_id=id,
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Ce technicien n'est pas disponible : il a déjà une intervention sur "
+                "cette période ou une intervention prévue dans moins de "
+                f"{TECHNICIEN_BUFFER_DAYS} jours.",
+            )
+
+    previous_statut = (
+        intervention.statut.value
+        if hasattr(intervention.statut, "value")
+        else intervention.statut
+    )
+
     try:
-        return update_intervention(db, intervention, update_data)
+        result = update_intervention(db, intervention, update_data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    if (
+        resulting_statut in ["ABOUTI", "IMPOSSIBLE"]
+        and resulting_statut != previous_statut
+    ):
+        send_completion_notification_email(intervention)
+
+    return result
 
 
 @router.put("/{id}/technicien")

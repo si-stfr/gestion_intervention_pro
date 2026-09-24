@@ -29,12 +29,13 @@ export default function InterventionsImprimer() {
                 statut: typeof i.statut === "object" ? i.statut.value : i.statut
             }));
 
-            // Filtrer par statut IMPOSSIBLE et par titre et type_intervention
+            // Filtrer par statut ABOUTI ou IMPOSSIBLE, et par titre et type_intervention
+            // (type_intervention peut être vide/null sur l'intervention, tout comme dans l'URL)
             const filtered = normalized.filter(
-                item => 
-                    item.statut === "IMPOSSIBLE" &&
+                item =>
+                    (item.statut === "ABOUTI" || item.statut === "IMPOSSIBLE") &&
                     item.titre === titre &&
-                    item.type_intervention === typeIntervention
+                    (item.type_intervention || "") === (typeIntervention || "")
             );
 
             // Trier par Date_de_la_demande
@@ -61,7 +62,9 @@ export default function InterventionsImprimer() {
     };
 
     useEffect(() => {
-        if (!titre || !typeIntervention) {
+        // "type_intervention" peut être vide sur une intervention (ex: ancienne donnée) :
+        // on ne redirige que si le paramètre est totalement absent de l'URL, pas s'il est vide.
+        if (!searchParams.has("titre") || !searchParams.has("typeIntervention")) {
             navigate("/interventions");
             return;
         }

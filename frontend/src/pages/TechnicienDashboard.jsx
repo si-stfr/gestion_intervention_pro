@@ -289,6 +289,8 @@ export default function TechnicienDashboard() {
 
         fetchInterventions();
 
+        alert("Intervention envoyé au Manager !");
+
     } catch (err) {
         console.error(err);
         alert(err?.response?.data?.detail || "Erreur lors de l'envoi au manager");

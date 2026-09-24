@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import api from "../api/api";
 
@@ -8,6 +9,7 @@ import InterventionsStatusPieChart from "../components/InterventionsStatusPieCha
 import LieuPopupButton from "../components/LieuPopupButton";
 import ServicesCommuneSelector from "../components/ServicesCommuneSelector";
 import { sortInterventions } from "../utils/sortInterventions";
+import { getAvailableTechniciens } from "../utils/technicienAvailability";
 
 const today = () => new Date().toISOString().split("T")[0];
 
@@ -50,6 +52,8 @@ const normalizeStatut = (statut) => {
 
 export default function IntervenantDashboard() {
 
+  const navigate = useNavigate();
+
   const [interventions, setInterventions] = useState([]);
   const [users, setUsers] = useState([]);
 
@@ -90,7 +94,7 @@ export default function IntervenantDashboard() {
     services_de_la_commune: [],
     sites_de_la_commune: [],
 
-    date_debut: "",
+    date_debut: today(),
 
     date_fin: today(),
 
@@ -100,6 +104,14 @@ export default function IntervenantDashboard() {
 
     technicien_id: ""
   });
+
+  const availableTechniciens = getAvailableTechniciens(
+    techniciens,
+    form.date_debut,
+    form.date_fin,
+    interventions,
+    editId
+  );
 
   useEffect(() => {
 
@@ -225,7 +237,7 @@ export default function IntervenantDashboard() {
       services_de_la_commune: [],
       sites_de_la_commune: [],
 
-      date_debut: "",
+      date_debut: today(),
 
       date_fin: today(),
 
@@ -259,6 +271,11 @@ export default function IntervenantDashboard() {
 
     if (!form.demandeur_telephone) {
         alert("Veuillez saisir le téléphone du demandeur");
+        return;
+        }
+
+    if (!form.demandeur_email) {
+        alert("Veuillez saisir l'email du demandeur");
         return;
         }
 
@@ -453,7 +470,7 @@ export default function IntervenantDashboard() {
       services_de_la_commune: item.services_de_la_commune ?? [],
       sites_de_la_commune: item.sites_de_la_commune ?? [],
 
-      date_debut: "",
+      date_debut: today(),
       date_fin: today(),
 
       lieu: item.lieu || "",
@@ -603,7 +620,7 @@ export default function IntervenantDashboard() {
             </select>
 
             {/* DEMANDEUR */}
-            <label>Demandeur</label>
+            <label>Nom du Demandeur</label>
             <input
               placeholder="Nom du demandeur"
               value={form.demandeur_nom}
@@ -627,7 +644,7 @@ export default function IntervenantDashboard() {
               }
             />
 
-            <label>Email du Demandeur (Facultatif)</label>
+            <label>Email du Demandeur</label>
             <input
               type="email"
               placeholder="Email du demandeur"
@@ -653,6 +670,7 @@ export default function IntervenantDashboard() {
             />
 
             {/* TITRE */}
+            <label>Titre</label>
             <input
               placeholder="Titre"
               value={form.titre}
@@ -665,6 +683,7 @@ export default function IntervenantDashboard() {
             />
 
             {/* DESCRIPTION */}
+            <label>Description</label>
             <textarea
               placeholder="Description"
               value={form.description_de_la_panne}
@@ -732,6 +751,9 @@ export default function IntervenantDashboard() {
                 })
               }
             >
+              <option>Intervention Eau</option>
+              <option>Intervention Electricité</option>
+              <option>Intervention Bâtimentaire</option>
               <option>Livraison</option>
               <option>Installation</option>
               <option>Livraison + Installation</option>
@@ -896,12 +918,8 @@ export default function IntervenantDashboard() {
             <input
               type="date"
               value={form.date_debut}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  date_debut: e.target.value
-                })
-              }
+              disabled
+              title="Seuls le Technicien et l'Admin peuvent modifier cette date"
             />
 
             {/* DATE FIN */}
@@ -910,12 +928,8 @@ export default function IntervenantDashboard() {
             <input
               type="date"
               value={form.date_fin}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  date_fin: e.target.value
-                })
-              }
+              disabled
+              title="Seuls le Technicien et l'Admin peuvent modifier cette date"
             />
 
             {/* LIEU */}
@@ -950,11 +964,18 @@ export default function IntervenantDashboard() {
                 -- Choisir un technicien --
               </option>
 
-              {techniciens.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.username}
-                </option>
-              ))}
+              {techniciens.map((u) => {
+                const dejaAssigne = Number(form.technicien_id) === Number(u.id);
+                const disponible = dejaAssigne || availableTechniciens.some((a) => a.id === u.id);
+
+                if (!disponible) return null;
+
+                return (
+                  <option key={u.id} value={u.id}>
+                    {u.username}
+                  </option>
+                );
+              })}
             </select>
 
           </div>
@@ -1150,6 +1171,23 @@ export default function IntervenantDashboard() {
                         >
                           Modifier
                         </button>
+
+                        {(item.statut === "IMPOSSIBLE" || item.statut === "ABOUTI") && (
+                          <button
+                            className="btn-imprimer"
+                            onClick={() =>
+                              navigate(
+                                `/interventions/imprimer?titre=${encodeURIComponent(
+                                  item.titre
+                                )}&typeIntervention=${encodeURIComponent(
+                                  item.type_intervention || ""
+                                )}`
+                              )
+                            }
+                          >
+                            Imprimer
+                          </button>
+                        )}
 
                         {item.statut === "IMPOSSIBLE" && (
                           <button

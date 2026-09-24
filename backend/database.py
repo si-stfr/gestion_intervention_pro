@@ -183,6 +183,32 @@ def ensure_urgence_priorite_echeance_dropped():
                 pass
 
 
+def ensure_type_intervention_values():
+    """Ajoute les nouveaux types d'intervention (Eau, Electricité, Bâtimentaire) à l'enum si absents."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        try:
+            column_type = conn.execute(
+                text(
+                    "SELECT COLUMN_TYPE FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = 'type_intervention'"
+                )
+            ).scalar()
+
+            if column_type and "Intervention Eau" not in column_type:
+                conn.execute(
+                    text(
+                        "ALTER TABLE interventions MODIFY COLUMN type_intervention "
+                        "ENUM('Intervention Eau','Intervention Electricité','Intervention Bâtimentaire',"
+                        "'Livraison','Installation','Livraison + Installation','Stockage',"
+                        "'Prêt de Matériel','Mise à jour','Autre') NOT NULL"
+                    )
+                )
+        except Exception:
+            pass
+
+
 def ensure_demandeur_id_nullable():
     """demandeur_id n'est plus renseigné à la création (remplacé par demandeur_nom texte libre)."""
     if not DATABASE_URL:

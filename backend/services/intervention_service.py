@@ -20,6 +20,9 @@ MANUAL_STATUTS = [
 # =========================================================
 # UTIL : CHECK CHEVAUCHEMENT INTERVENTION TECHNICIEN
 # =========================================================
+TECHNICIEN_BUFFER_DAYS = 4
+
+
 def is_technicien_available(
     db: Session,
     Technicien_id: int,
@@ -28,21 +31,39 @@ def is_technicien_available(
     exclude_id=None,
 ):
     """
-    Vérifie si un technicien est libre sur une période donnée
+    Vérifie qu'un technicien :
+    - n'a pas déjà une intervention active dont les dates chevauchent la période demandée,
+    - n'a pas d'intervention active prévue pour commencer dans moins de TECHNICIEN_BUFFER_DAYS jours.
     """
 
-    query = db.query(Intervention).filter(Intervention.technicien_id == Technicien_id)
+    date_debut = to_date(date_debut)
+    date_fin = to_date(date_fin)
+
+    query = db.query(Intervention).filter(
+        Intervention.technicien_id == Technicien_id,
+        Intervention.statut.notin_(
+            [StatutIntervention.ABOUTI.value, StatutIntervention.IMPOSSIBLE.value]
+        ),
+    )
 
     if exclude_id:
         query = query.filter(Intervention.id != exclude_id)
 
     interventions = query.all()
 
+    today = date.today()
+    buffer_limit = today + timedelta(days=TECHNICIEN_BUFFER_DAYS)
+
     for i in interventions:
         i_debut = to_date(i.date_debut)
         i_fin = to_date(i.date_fin)
+
         # chevauchement de planning
-        if not (date_fin < i_debut or date_debut > i_fin):
+        if i_debut and i_fin and not (date_fin < i_debut or date_debut > i_fin):
+            return False
+
+        # intervention déjà prévue pour démarrer très bientôt
+        if i_debut and today <= i_debut < buffer_limit:
             return False
 
     return True
@@ -98,7 +119,15 @@ def compute_statut(intervention):
     if date_fin and today > date_fin:
         return "EN_RETARD"
 
-    if statut == "SIGNALE" and date_debut and today >= date_debut:
+    # Tant que la date de début et la date de fin sont identiques (valeurs par
+    # défaut jamais ajustées), le passage automatique en "En cours" est désactivé.
+    if (
+        statut == "SIGNALE"
+        and date_debut
+        and date_fin
+        and date_debut != date_fin
+        and today >= date_debut
+    ):
         return "EN_COURS"
 
     return statut
@@ -189,6 +218,91 @@ def normalize_piece_jointe(piece_jointe: str | None):
 
 
 # =========================================================
+# NOTIFICATION EMAIL AU DEMANDEUR (INTERVENTION TERMINÉE / NON RÉSOLUE)
+# =========================================================
+STATUT_FINAL_LABELS = {
+    StatutIntervention.ABOUTI.value: "Terminée",
+    StatutIntervention.IMPOSSIBLE.value: "Non résolue",
+}
+
+
+def send_completion_notification_email(intervention: Intervention):
+    from services.email_service import send_email
+
+    if not intervention.demandeur_email:
+        return
+
+    statut_value = (
+        intervention.statut.value
+        if hasattr(intervention.statut, "value")
+        else intervention.statut
+    )
+    statut_label = STATUT_FINAL_LABELS.get(statut_value, statut_value)
+
+    image_html = ""
+    image_attachment = None
+    piece_jointe = intervention.piece_jointe
+
+    if piece_jointe and piece_jointe.startswith("data:image/"):
+        image_html = f'<p><img src="{piece_jointe}" alt="Photo de l\'intervention" style="max-width:400px;border-radius:8px;"></p>'
+        try:
+            header, b64_payload = piece_jointe.split(",", 1)
+            subtype = header.split("/")[1].split(";")[0]
+            image_attachment = {
+                "filename": f"intervention_{intervention.id}.{subtype}",
+                "content_base64": b64_payload,
+                "subtype": subtype,
+            }
+        except Exception:
+            image_attachment = None
+    elif piece_jointe and piece_jointe.startswith("http"):
+        image_html = f'<p><img src="{piece_jointe}" alt="Photo de l\'intervention" style="max-width:400px;border-radius:8px;"></p>'
+
+    html_body = f"""
+    <div style="font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;">
+        <h2 style="color:#0074c7;">Intervention {statut_label}</h2>
+        <p>Bonjour {intervention.demandeur_nom or ''},</p>
+        <p>Votre demande d'intervention a été traitée avec le statut : <strong>{statut_label}</strong>.</p>
+        <table style="border-collapse:collapse;">
+            <tr><td style="padding:4px 8px;"><strong>Titre</strong></td><td style="padding:4px 8px;">{intervention.titre}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Type d'intervention</strong></td><td style="padding:4px 8px;">{intervention.type_intervention.value if intervention.type_intervention else '-'}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Description</strong></td><td style="padding:4px 8px;">{intervention.description_de_la_panne or '-'}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Lieu</strong></td><td style="padding:4px 8px;">{intervention.lieu or '-'}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Date de début</strong></td><td style="padding:4px 8px;">{intervention.date_debut or '-'}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Date de fin</strong></td><td style="padding:4px 8px;">{intervention.date_fin or '-'}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Actions réalisées</strong></td><td style="padding:4px 8px;">{intervention.actions_realisees or '-'}</td></tr>
+            <tr><td style="padding:4px 8px;"><strong>Commentaire</strong></td><td style="padding:4px 8px;">{intervention.commentaire or '-'}</td></tr>
+        </table>
+        {image_html}
+        <p>Ce message est envoyé automatiquement, merci de ne pas y répondre.</p>
+    </div>
+    """
+
+    text_body = (
+        f"Intervention {statut_label}\n\n"
+        f"Titre : {intervention.titre}\n"
+        f"Description : {intervention.description_de_la_panne or '-'}\n"
+        f"Lieu : {intervention.lieu or '-'}\n"
+        f"Date de début : {intervention.date_debut or '-'}\n"
+        f"Date de fin : {intervention.date_fin or '-'}\n"
+        f"Actions réalisées : {intervention.actions_realisees or '-'}\n"
+        f"Commentaire : {intervention.commentaire or '-'}\n"
+    )
+
+    try:
+        send_email(
+            to_email=intervention.demandeur_email,
+            subject=f"Intervention \"{intervention.titre}\" — {statut_label}",
+            html_body=html_body,
+            text_body=text_body,
+            image_attachment=image_attachment,
+        )
+    except Exception:
+        # La notification ne doit jamais faire échouer la validation de l'intervention.
+        pass
+
+
+# =========================================================
 # VALIDATION INTERVENTION PAR MANAGER
 # =========================================================
 def validate_intervention(
@@ -219,6 +333,8 @@ def validate_intervention(
 
     db.commit()
     db.refresh(intervention)
+
+    send_completion_notification_email(intervention)
 
     return intervention
 
@@ -386,6 +502,16 @@ def create_intervention(db: Session, data: dict):
     print("DATA REÇU =", data)  # DEBUG IMPORTANT
 
     validate_dates(data["date_debut"], data["date_fin"])
+
+    technicien_id = data.get("technicien_id")
+    if technicien_id and not is_technicien_available(
+        db, technicien_id, data["date_debut"], data["date_fin"]
+    ):
+        raise ValueError(
+            "Ce technicien n'est pas disponible : il a déjà une intervention sur "
+            "cette période ou une intervention prévue dans moins de "
+            f"{TECHNICIEN_BUFFER_DAYS} jours."
+        )
 
     # 🔥 COPIE SAFE (IMPORTANT)
     clean_data = dict(data)

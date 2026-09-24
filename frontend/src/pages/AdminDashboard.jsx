@@ -469,7 +469,7 @@ const yTicks = Array.from(
 
                     {/* ACTIONS */}
                     <td>
-                      {item.statut === "IMPOSSIBLE" && (
+                      {(item.statut === "IMPOSSIBLE" || item.statut === "ABOUTI") && (
                         <div className="actions-buttons">
                           <button
                             className="btn-imprimer"
