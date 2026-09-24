@@ -327,7 +327,7 @@ const yTicks = Array.from(
               <thead>
                 <tr>
                   <th>Statut</th>
-                  <th>Demandeur</th>
+                  <th>Nom du Demandeur</th>
                   <th>Prénom</th>
                   <th>Email</th>
                   <th>Téléphone</th>
