@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 from models.intervention import ResultatIntervention
 
@@ -76,6 +76,8 @@ class InterventionTechnicienUpdate(BaseModel):
 
     date_fin: Optional[date] = None
     date_debut: Optional[date] = None
+    heure_debut: Optional[time] = None
+    heure_fin: Optional[time] = None
 
     actions_realisees: Optional[str] = None
     diagnostique_effectue: Optional[str] = None

@@ -1222,10 +1222,10 @@ export default function Interventions() {
                     </td>
 
                     {/* DATE DÉBUT */}
-                    <td>{item.date_debut}</td>
+                    <td>{item.date_debut}{item.heure_debut ? ` ${item.heure_debut}` : ""}</td>
 
                     {/* DATE FIN */}
-                    <td>{item.date_fin}</td>
+                    <td>{item.date_fin}{item.heure_fin ? ` ${item.heure_fin}` : ""}</td>
 
                     {/* GÉOLOCALISATION */}
                     <td>

@@ -8,6 +8,7 @@ from sqlalchemy import (
     String,
     Text,
     Date,
+    Time,
     Float,
     Enum,
     ForeignKey,
@@ -107,8 +108,10 @@ class Intervention(Base):
     sites_de_la_commune = Column(Text, nullable=True)
 
     date_debut = Column(Date, nullable=False)
+    heure_debut = Column(Time, nullable=True)
 
     date_fin = Column(Date)
+    heure_fin = Column(Time, nullable=True)
 
     lieu = Column(String(255))
     latitude = Column(Float, nullable=True)

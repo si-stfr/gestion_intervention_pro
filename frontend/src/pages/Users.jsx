@@ -25,11 +25,18 @@ export default function Users() {
   // =========================================
   // FETCH USERS
   // =========================================
+  const currentUser = JSON.parse(
+    localStorage.getItem("user")
+  );
+
+  const isManager = currentUser?.profil === "MANAGER";
+
   const fetchUsers = async () => {
 
     try {
 
-      const res = await api.get("/users/");
+      // Le manager ne voit que ses techniciens et les techniciens encore libres
+      const res = await api.get(isManager ? "/users/techniciens" : "/users/");
 
       setUsers(res.data);
 
@@ -156,9 +163,98 @@ export default function Users() {
     (u) => u.profil === "ADMIN"
   ).length;
 
-  const currentUser = JSON.parse(
-  localStorage.getItem("user")
-  );
+  // =========================================
+  // MANAGER : S'APPROPRIER / RETIRER UN TECHNICIEN
+  // =========================================
+  const assignTechnicien = async (id) => {
+    try {
+      await api.put(`/users/techniciens/${id}/assign`);
+      fetchUsers();
+    } catch (err) {
+      alert(err?.response?.data?.detail || "Erreur lors du rattachement");
+      fetchUsers();
+    }
+  };
+
+  const unassignTechnicien = async (id) => {
+    try {
+      await api.delete(`/users/techniciens/${id}/assign`);
+      fetchUsers();
+    } catch (err) {
+      alert(err?.response?.data?.detail || "Erreur lors du retrait");
+      fetchUsers();
+    }
+  };
+
+  if (isManager) {
+    const mesTechniciens = users.filter(
+      (u) => Number(u.manager_id) === Number(currentUser.id)
+    );
+    const techniciensLibres = users.filter((u) => !u.manager_id);
+
+    const renderTechnicien = (u, rattache) => (
+      <div key={u.id} className="user-item">
+        <div className="user-info">
+          <p>
+            <strong className="label-name">Nom :</strong>
+            {u.username}
+          </p>
+          <p>
+            <strong className="label-email">Email :</strong>
+            {u.email}
+          </p>
+          <p>
+            <strong className="label-phone">Téléphone :</strong>
+            {u.telephone || "-"}
+          </p>
+        </div>
+
+        <div className="user-actions">
+          {rattache ? (
+            <button
+              className="btn-delete"
+              onClick={() => unassignTechnicien(u.id)}
+            >
+              Retirer de mon équipe
+            </button>
+          ) : (
+            <button
+              className="btn-edit"
+              onClick={() => assignTechnicien(u.id)}
+            >
+              Ajouter à mon équipe
+            </button>
+          )}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="layout">
+        <Sidebar />
+
+        <div className="page-content">
+          <h1 className="users-title">Mon équipe de techniciens</h1>
+
+          <h2>Mes techniciens ({mesTechniciens.length})</h2>
+          <div className="users-list">
+            {mesTechniciens.length === 0 && (
+              <p>Aucun technicien dans votre équipe pour le moment.</p>
+            )}
+            {mesTechniciens.map((u) => renderTechnicien(u, true))}
+          </div>
+
+          <h2>Techniciens disponibles ({techniciensLibres.length})</h2>
+          <div className="users-list">
+            {techniciensLibres.length === 0 && (
+              <p>Aucun technicien disponible : tous sont déjà rattachés à un manager.</p>
+            )}
+            {techniciensLibres.map((u) => renderTechnicien(u, false))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
 
@@ -326,6 +422,16 @@ export default function Users() {
 
                   {u.profil}
                 </p>
+
+                {u.profil === "TECHNICIEN" && (
+                  <p>
+                    <strong className="label-profil">
+                      Manager :
+                    </strong>
+
+                    {users.find((m) => m.id === u.manager_id)?.username || "-"}
+                  </p>
+                )}
 
               </div>
 

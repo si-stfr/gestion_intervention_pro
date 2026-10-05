@@ -232,10 +232,10 @@ export default function ManagerDashboard() {
                                         <td>{item.source_demande || "-"}</td>
 
                                         {/* 11 DATE DÉBUT */}
-                                        <td>{item.date_debut}</td>
+                                        <td>{item.date_debut}{item.heure_debut ? ` ${item.heure_debut}` : ""}</td>
 
                                         {/* 13 DATE FIN */}
-                                        <td>{item.date_fin}</td>
+                                        <td>{item.date_fin}{item.heure_fin ? ` ${item.heure_fin}` : ""}</td>
 
                                         {/* 14 GEO */}
                                         <td>

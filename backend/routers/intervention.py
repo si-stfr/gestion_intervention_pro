@@ -123,7 +123,11 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # DATES
                 # =========================
                 "date_debut": i.date_debut.isoformat() if i.date_debut else None,
+                "heure_debut": (
+                    i.heure_debut.strftime("%H:%M") if i.heure_debut else None
+                ),
                 "date_fin": i.date_fin.isoformat() if i.date_fin else None,
+                "heure_fin": i.heure_fin.strftime("%H:%M") if i.heure_fin else None,
                 "date_verification": (
                     i.date_verification.isoformat() if i.date_verification else None
                 ),
@@ -179,6 +183,7 @@ def get_users_public(db: Session = Depends(get_db), user=Depends(get_current_use
             "id": u.id,
             "username": u.username,
             "profil": u.profil.value if u.profil else None,
+            "manager_id": u.manager_id,
         }
         for u in users
     ]
@@ -350,6 +355,24 @@ def update_technicien(
     # le statut passe automatiquement en attente de validation.
     update_data["statut"] = "EN_ATTENTE_VALIDATION"
 
+    # cohérence date/heure de début et de fin
+    new_debut = update_data.get("date_debut", intervention.date_debut)
+    new_fin = update_data.get("date_fin", intervention.date_fin)
+    h_debut = update_data.get("heure_debut", intervention.heure_debut)
+    h_fin = update_data.get("heure_fin", intervention.heure_fin)
+
+    if new_debut and new_fin:
+        if new_fin < new_debut:
+            raise HTTPException(
+                status_code=400,
+                detail="La date de fin ne peut pas être avant la date de début",
+            )
+        if new_fin == new_debut and h_debut and h_fin and h_fin < h_debut:
+            raise HTTPException(
+                status_code=400,
+                detail="L'heure de fin ne peut pas être avant l'heure de début",
+            )
+
     if "resultat_intervention" in update_data:
         value = update_data["resultat_intervention"]
 
@@ -425,9 +448,16 @@ def send_manager(
     if intervention.technicien_id != user.id:
         raise HTTPException(status_code=403)
 
+    # Le manager n'est pas au choix : c'est celui auquel le technicien est rattaché.
+    if not user.manager_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Vous n'êtes rattaché à aucun manager. Demandez à un manager de vous ajouter à son équipe.",
+        )
+
     try:
         return send_to_manager(
-            db, intervention, data["manager_id"], data["date_verification"]
+            db, intervention, user.manager_id, data["date_verification"]
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

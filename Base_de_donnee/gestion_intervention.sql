@@ -74,7 +74,9 @@ CREATE TABLE `interventions` (
   `resultat_intervention` enum('Problème résolu','Nouvelle intervention nécessaire') DEFAULT NULL,
   `commentaire` text DEFAULT NULL,
   `date_debut` date NOT NULL,
+  `heure_debut` time DEFAULT NULL,
   `date_fin` date NOT NULL,
+  `heure_fin` time DEFAULT NULL,
   `lieu` text DEFAULT NULL COMMENT 'Lieu de l''intervention',
   `latitude` float DEFAULT NULL,
   `longitude` float DEFAULT NULL,
@@ -245,9 +247,11 @@ CREATE TABLE `users` (
   `profil` enum('ADMIN','TECHNICIEN','INTERVENANT','MANAGER') NOT NULL DEFAULT 'INTERVENANT',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `hashed_password` varchar(255) NOT NULL,
+  `manager_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `email` (`email`),
+  KEY `users_ibfk_manager` (`manager_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -261,7 +265,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_
 (7, 'Mark', 'Mark.evans@gmail.com', '0690775533', 'MANAGER', '2026-05-19 18:52:50', '$2b$10$vljOi2XobbwLXGKAyel2duqY.uq/wwru3ESXjIOmp5r9oxsD/LoGi'),
 (8, 'Axel', 'axel.blaze@gmail.com', '00690101010', 'INTERVENANT', '2026-05-23 01:07:17', '$2b$12$Zk.Up2Yg.tZvIKvWVwQeTubDluaCbFnd4LWxI1rlEknR66os3Q5j.'),
 (9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 04:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS'),
-(10, 'Rayapin', 'Grayapin@ville-saintfrancois.fr', '0690489010', 'INTERVENANT', '2026-09-10 19:14:45', '$2b$12$0z.HgZEHjJ6HDhOXt3JtneKia2s1MkAsnBZEyRU5dSE0VnE7L4E1S');
+(10, 'Rayapin', 'Grayapin@ville-saintfrancois.fr', '0690489010', 'INTERVENANT', '2026-09-10 19:14:45', '$2b$12$0z.HgZEHjJ6HDhOXt3JtneKia2s1MkAsnBZEyRU5dSE0VnE7L4E1S'),
+(11, 'Thierry', 'TRAGHOUNANDAN@ville-saintfrancois.fr', '0690799466', 'MANAGER', '2026-10-05 09:57:50', '$2b$12$sEO8epR1bqKtSElDz3kPjeNIE9t9WwTLBBxJuWCg9xBKXkX7eZLdS');
 
 --
 -- Index pour les tables déchargées
@@ -307,7 +312,7 @@ ALTER TABLE `refresh_tokens`
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Contraintes pour les tables déchargées
@@ -352,6 +357,12 @@ ALTER TABLE `password_reset_tokens`
 --
 ALTER TABLE `refresh_tokens`
   ADD CONSTRAINT `refresh_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `users` (rattachement technicien -> manager)
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_manager` FOREIGN KEY (`manager_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

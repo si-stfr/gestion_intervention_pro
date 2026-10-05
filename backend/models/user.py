@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey
 from database import Base
 import enum
 from sqlalchemy.orm import relationship
@@ -36,6 +36,13 @@ class User(Base):
 
     # mot de passe hashé (JAMAIS en clair)
     hashed_password = Column(String(255), nullable=False)
+
+    # Manager auquel un TECHNICIEN est rattaché (NULL = pas encore rattaché)
+    manager_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
 
     refresh_tokens = relationship(
         "RefreshToken",

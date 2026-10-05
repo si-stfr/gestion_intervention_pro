@@ -197,6 +197,7 @@ export default function InterventionsImprimer() {
                             <th>Date de réalisation</th>
                             <th>Tâches réalisées</th>
                             <th>Observations</th>
+                            <th>Technicien</th>
                             <th>Pièce jointe</th>
                         </tr>
                     </thead>
@@ -206,10 +207,14 @@ export default function InterventionsImprimer() {
                                 <td>{item.Date_de_la_demande ? new Date(item.Date_de_la_demande).toLocaleDateString("fr-FR") : "-"}</td>
                                 <td>{item.description_de_la_panne || "-"}</td>
                                 <td>{item.lieu || "-"}</td>
-                                <td>{item.date_fin ? new Date(item.date_fin).toLocaleDateString("fr-FR") : "-"}</td>
+                                <td>
+                                    {item.date_fin ? new Date(item.date_fin).toLocaleDateString("fr-FR") : "-"}
+                                    {item.date_fin && item.heure_fin ? ` ${item.heure_fin}` : ""}
+                                </td>
                                 <td>{item.date_verification ? new Date(item.date_verification).toLocaleDateString("fr-FR") : "-"}</td>
                                 <td>{item.actions_realisees || "-"}</td>
                                 <td>{item.commentaire || "-"}</td>
+                                <td>{item.technicien_name || "-"}</td>
                                 <td>
                                     {(() => {
                                         const attachment = getAttachment(item);

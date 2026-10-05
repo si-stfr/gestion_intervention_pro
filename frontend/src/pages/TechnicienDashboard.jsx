@@ -51,13 +51,13 @@ export default function TechnicienDashboard() {
   const [selectedStatus, setSelectedStatus] = useState("");
 
   const [editId, setEditId] = useState(null);
-  const [selectedManagerByIntervention, setSelectedManagerByIntervention] = useState({});
 
   const techniciens = users.filter(u => u.profil === "TECHNICIEN");
   const user = JSON.parse(localStorage.getItem("user"));
-  const managers = users.filter(u => u.profil === "MANAGER");
-    console.log("USERS:", users);
-    console.log("MANAGERS:", managers);
+
+  // Le manager d'un technicien est imposé : c'est celui auquel il est rattaché
+  const myManagerId = users.find(u => Number(u.id) === Number(user.id))?.manager_id ?? null;
+  const myManager = users.find(u => Number(u.id) === Number(myManagerId)) || null;
 
   const [form, setForm] = useState({
 
@@ -70,7 +70,9 @@ export default function TechnicienDashboard() {
       type_intervention_autre: "",
 
       date_debut: "",
+      heure_debut: "",
       date_fin: "",
+      heure_fin: "",
 
       lieu: "",
 
@@ -177,7 +179,9 @@ export default function TechnicienDashboard() {
         type_intervention_autre: "",
 
         date_debut: "",
+        heure_debut: "",
         date_fin: "",
+        heure_fin: "",
 
         lieu: "",
 
@@ -213,8 +217,10 @@ export default function TechnicienDashboard() {
       statut: item.statut || "",
 
       date_debut: item.date_debut ? item.date_debut.split("T")[0]: "",
+      heure_debut: item.heure_debut || "",
 
       date_fin: item.date_fin ? item.date_fin.split("T")[0]: "",
+      heure_fin: item.heure_fin || "",
 
       lieu: item.lieu,
 
@@ -242,6 +248,11 @@ export default function TechnicienDashboard() {
         // l'intervention en attente de validation.
         statut: "EN_ATTENTE_VALIDATION",
 
+        date_debut: form.date_debut || null,
+        heure_debut: form.heure_debut || null,
+        date_fin: form.date_fin || null,
+        heure_fin: form.heure_fin || null,
+
         diagnostique_effectue: form.diagnostique_effectue,
 
         actions_realisees: form.actions_realisees,
@@ -264,26 +275,23 @@ export default function TechnicienDashboard() {
 
   const sendToManager = async (item) => {
 
-    const selectedManagerIdPerRow = selectedManagerByIntervention[item.id];
-
     if (item.statut == "SIGNALE") {
       alert("Veuillez compléter l'intervention avant de l'envoyer à un manager");
       return;
     }
 
-    if (!selectedManagerIdPerRow) {
-        alert("Choisissez un manager");
+    if (!myManager) {
+        alert("Vous n'êtes rattaché à aucun manager. Demandez à un manager de vous ajouter à son équipe.");
         return;
     }
 
     const confirmSend = window.confirm(
-            "Envoyer au manager ?"
+            `Envoyer au manager ${myManager.username} ?`
         );
 
     if (!confirmSend) return;
     try {
         await api.post(`/intervention/${item.id}/send-manager`, {
-            manager_id: Number(selectedManagerIdPerRow),
             date_verification: new Date().toISOString().split("T")[0]
         });
 
@@ -346,6 +354,15 @@ export default function TechnicienDashboard() {
                     }
                 />
 
+                <label>Heure de début</label>
+                <input
+                    type="time"
+                    value={form.heure_debut}
+                    onChange={(e) =>
+                    setForm({ ...form, heure_debut: e.target.value })
+                    }
+                />
+
                 {/* 3. DATE FIN */}
                 <label>Date de fin</label>
                 <input
@@ -353,6 +370,15 @@ export default function TechnicienDashboard() {
                     value={form.date_fin}
                     onChange={(e) =>
                     setForm({ ...form, date_fin: e.target.value })
+                    }
+                />
+
+                <label>Heure de fin</label>
+                <input
+                    type="time"
+                    value={form.heure_fin}
+                    onChange={(e) =>
+                    setForm({ ...form, heure_fin: e.target.value })
                     }
                 />
 
@@ -562,10 +588,10 @@ export default function TechnicienDashboard() {
                     <td>{item.source_demande || "-"}</td>
 
                     {/* 11. Date début */}
-                    <td>{item.date_debut}</td>
+                    <td>{item.date_debut}{item.heure_debut ? ` ${item.heure_debut}` : ""}</td>
 
                     {/* 13. Date fin */}
-                    <td>{item.date_fin}</td>
+                    <td>{item.date_fin}{item.heure_fin ? ` ${item.heure_fin}` : ""}</td>
 
                     {/* 14. Géolocalisation */}
                     <td>
@@ -591,25 +617,9 @@ export default function TechnicienDashboard() {
 
                     {/* 21. Manager */}
                     <td>
-                        <select
-                            value={selectedManagerByIntervention[item.id] || ""}
-                            onChange={(e) => {
-                            const value = e.target.value;
-
-                            setSelectedManagerByIntervention((prev) => ({
-                                ...prev,
-                                [item.id]: value,
-                            }));
-                            }}
-                        >
-                            <option value="">-- Choisir un manager --</option>
-
-                            {managers.map((u) => (
-                            <option key={u.id} value={u.id}>
-                                {u.username}
-                            </option>
-                            ))}
-                        </select>
+                        {item.manager_name
+                            || myManager?.username
+                            || "Aucun manager rattaché"}
                     </td>
 
                     {/* 22. Date de vérification */}

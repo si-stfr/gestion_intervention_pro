@@ -67,6 +67,7 @@ export default function Sidebar() {
             <Link to="/generalview" className="link-purple">Vue d'ensemble</Link>
             <Link to="/manager" className="link-admin">Dashboard Manager</Link>
             <Link to="/interventions" className="link-interventions">Interventions</Link>
+            <Link to="/users" className="link-users">Gestion utilisateurs</Link>
             <Link to="/materiels" className="link-materiel">Matériels</Link>
           </>
         )}

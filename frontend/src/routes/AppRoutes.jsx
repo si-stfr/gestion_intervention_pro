@@ -97,7 +97,7 @@ export default function AppRoutes() {
           path="/users"
           element={
             <ProtectedRoute
-              allowedRoles={["ADMIN"]}
+              allowedRoles={["ADMIN", "MANAGER"]}
             >
               <Users />
             </ProtectedRoute>

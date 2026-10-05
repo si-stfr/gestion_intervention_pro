@@ -39,6 +39,7 @@ class UserResponse(BaseModel):
     email: Optional[str]
     telephone: Optional[str]
     profil: str
+    manager_id: Optional[int] = None
 
     class Config:
         from_attributes = True

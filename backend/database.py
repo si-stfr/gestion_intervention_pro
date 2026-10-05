@@ -183,6 +183,58 @@ def ensure_urgence_priorite_echeance_dropped():
                 pass
 
 
+def ensure_user_manager_column():
+    """Ajoute users.manager_id (rattachement d'un technicien à un manager)."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        try:
+            exists = conn.execute(
+                text(
+                    "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'manager_id'"
+                )
+            ).scalar()
+            if not exists:
+                conn.execute(text("ALTER TABLE users ADD COLUMN manager_id INT NULL"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD CONSTRAINT users_ibfk_manager FOREIGN KEY (manager_id) REFERENCES users (id) ON DELETE SET NULL"
+                    )
+                )
+        except Exception:
+            pass
+
+
+def ensure_heure_columns():
+    """Ajoute heure_debut / heure_fin, juste après date_debut / date_fin."""
+    if not DATABASE_URL:
+        return
+
+    columns_to_add = [
+        ("heure_debut", "TIME NULL", "date_debut"),
+        ("heure_fin", "TIME NULL", "date_fin"),
+    ]
+
+    with engine.begin() as conn:
+        for column_name, ddl_type, after in columns_to_add:
+            try:
+                exists = conn.execute(
+                    text(
+                        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'interventions' AND column_name = :col"
+                    ),
+                    {"col": column_name},
+                ).scalar()
+                if not exists:
+                    conn.execute(
+                        text(
+                            f"ALTER TABLE interventions ADD COLUMN {column_name} {ddl_type} AFTER {after}"
+                        )
+                    )
+            except Exception:
+                pass
+
+
 def ensure_type_intervention_values():
     """Ajoute les nouveaux types d'intervention (Eau, Electricité, Bâtimentaire) à l'enum si absents."""
     if not DATABASE_URL:
