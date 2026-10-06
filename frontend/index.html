@@ -5,9 +5,51 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestion d'interventions</title>
+    <!-- Diagnostic de démarrage : écrit en ES5 pour fonctionner même sur un très vieux navigateur -->
+    <script>
+      (function () {
+        var errors = [];
+        function note(msg) {
+          errors.push(String(msg));
+        }
+        window.addEventListener("error", function (e) {
+          note((e && e.message) || "Erreur inconnue");
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          note("Promesse rejetée : " + ((e && e.reason && e.reason.message) || (e && e.reason) || ""));
+        });
+        setTimeout(function () {
+          var root = document.getElementById("root");
+          if (!root || root.children.length > 0) return;
+          var box = document.getElementById("boot-error");
+          if (!box) return;
+          box.style.display = "block";
+          document.getElementById("boot-error-details").textContent =
+            (errors.length ? errors.join(" | ") + "\n\n" : "") + navigator.userAgent;
+        }, 8000);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <div
+      id="boot-error"
+      style="display:none;max-width:520px;margin:40px auto;padding:20px;font-family:Arial,sans-serif;text-align:center"
+    >
+      <h2 style="color:#cd2c2e">Le site n'a pas pu démarrer</h2>
+      <p>
+        Votre navigateur est peut-être trop ancien, ou un blocage (filtre, réseau) empêche le
+        chargement complet. Mettez à jour Chrome / Samsung Internet et « Android System WebView »
+        (Play Store), puis rechargez la page.
+      </p>
+      <p style="font-size:12px;color:#666;word-break:break-word;white-space:pre-wrap" id="boot-error-details"></p>
+      <button style="padding:10px 18px;cursor:pointer" onclick="window.location.reload()">Recharger la page</button>
+    </div>
+    <noscript>
+      <p style="text-align:center;font-family:Arial,sans-serif">
+        JavaScript est désactivé : activez-le pour utiliser l'application.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
