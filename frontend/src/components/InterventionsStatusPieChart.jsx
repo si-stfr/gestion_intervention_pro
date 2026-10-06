@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export const STATUT_PIE_CATEGORIES = [
@@ -9,12 +10,30 @@ export const STATUT_PIE_CATEGORIES = [
   { key: "ABOUTI", name: "Terminée", color: "#27ae60" },
 ];
 
+const SMALL_SCREEN_QUERY = "(max-width: 500px)";
+
+function useSmallScreen() {
+  const [small, setSmall] = useState(() => window.matchMedia(SMALL_SCREEN_QUERY).matches);
+
+  useEffect(() => {
+    const mq = window.matchMedia(SMALL_SCREEN_QUERY);
+    const onChange = (e) => setSmall(e.matches);
+    setSmall(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  return small;
+}
+
 export default function InterventionsStatusPieChart({
   interventions,
   onSliceClick,
   title = "Interventions par statut",
   height = 500,
 }) {
+  const small = useSmallScreen();
+
   const data = STATUT_PIE_CATEGORIES.map((cat) => ({
     ...cat,
     value: interventions.filter((i) => i.statut === cat.key).length,
@@ -24,14 +43,18 @@ export default function InterventionsStatusPieChart({
     <div className="chart-container">
       <h2>{title}</h2>
 
-      <ResponsiveContainer width="100%" height={height}>
+      <ResponsiveContainer width="100%" height={small ? 380 : height}>
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
             nameKey="name"
-            outerRadius={180}
-            label={({ name, value }) => `${name} (${value})`}
+            outerRadius={small ? 70 : 180}
+            label={
+              small
+                ? ({ value }) => value
+                : ({ name, value }) => `${name} (${value})`
+            }
             onClick={onSliceClick ? (entry) => onSliceClick(entry.key) : undefined}
           >
             {data.map((entry) => (

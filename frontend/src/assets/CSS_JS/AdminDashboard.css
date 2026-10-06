@@ -497,6 +497,10 @@ textarea {
 
 .kpi-box{
   margin-top: 0px;
+  /* L'axe vertical (graduations) occupe 60px à gauche du graphique :
+     la même marge à droite recentre la zone des barres sous le titre. */
+  padding-right: 60px;
+  box-sizing: border-box;
 }
 
 .chart-label{
@@ -654,4 +658,26 @@ textarea {
   font-size: 22px;
   line-height: 1;
   padding: 0;
+}
+
+/* =========================================================
+   MOBILE (<= 500px) : diagramme en secteurs plus petit, sans coupure
+   (en fin de fichier pour l'emporter sur les règles précédentes)
+========================================================= */
+@media (max-width: 500px) {
+  .chart-container {
+    padding: 12px;
+    box-sizing: border-box;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+
+  .chart-container h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .chart-container .recharts-legend-wrapper {
+    font-size: 12px;
+  }
 }

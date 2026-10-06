@@ -1190,3 +1190,25 @@ td {
   width: 50px;
   max-height: 0px;
 }
+
+/* =========================================================
+   MOBILE (<= 500px) : diagramme en secteurs plus petit, sans coupure
+   (en fin de fichier pour l'emporter sur les règles précédentes)
+========================================================= */
+@media (max-width: 500px) {
+  .chart-container {
+    padding: 12px;
+    box-sizing: border-box;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+
+  .chart-container h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .chart-container .recharts-legend-wrapper {
+    font-size: 12px;
+  }
+}
