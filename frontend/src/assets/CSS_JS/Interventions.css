@@ -1212,3 +1212,28 @@ td {
     font-size: 12px;
   }
 }
+
+
+/* =========================================================
+   PAGE MATÉRIELS (<= 1200px) : les boutons de la colonne
+   "Actions" restent dans leur colonne, empilés verticalement
+   (en fin de fichier pour l'emporter sur les règles précédentes)
+========================================================= */
+@media (max-width: 1200px) {
+  .buttons-materiel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 110px;
+  }
+
+  .buttons-materiel button,
+  .btn-materiel-modif,
+  .btn-materiel-supp {
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+}
