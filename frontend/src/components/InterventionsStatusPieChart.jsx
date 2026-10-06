@@ -12,15 +12,35 @@ export const STATUT_PIE_CATEGORIES = [
 
 const SMALL_SCREEN_QUERY = "(max-width: 500px)";
 
+// Compatible avec les anciens navigateurs (tablettes/Safari ≤ 13), où
+// MediaQueryList n'a pas addEventListener (seulement addListener).
+function getMediaQuery() {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(SMALL_SCREEN_QUERY)
+    : null;
+}
+
 function useSmallScreen() {
-  const [small, setSmall] = useState(() => window.matchMedia(SMALL_SCREEN_QUERY).matches);
+  const [small, setSmall] = useState(() => Boolean(getMediaQuery()?.matches));
 
   useEffect(() => {
-    const mq = window.matchMedia(SMALL_SCREEN_QUERY);
+    const mq = getMediaQuery();
+    if (!mq) return undefined;
+
     const onChange = (e) => setSmall(e.matches);
     setSmall(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    }
+
+    if (typeof mq.addListener === "function") {
+      mq.addListener(onChange);
+      return () => mq.removeListener(onChange);
+    }
+
+    return undefined;
   }, []);
 
   return small;

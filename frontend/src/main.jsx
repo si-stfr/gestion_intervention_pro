@@ -1,9 +1,11 @@
+import "./polyfills";
 import React from "react";
 import ReactDOM from "react-dom/client";
 
 import App from "./App";
 
 import { AuthProvider } from "./context/AuthContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import "./assets/CSS_JS/global.css";
 
@@ -13,11 +15,15 @@ ReactDOM.createRoot(
 
   <React.StrictMode>
 
-    <AuthProvider>
+    <ErrorBoundary>
 
-      <App />
+      <AuthProvider>
 
-    </AuthProvider>
+        <App />
+
+      </AuthProvider>
+
+    </ErrorBoundary>
 
   </React.StrictMode>
 );
