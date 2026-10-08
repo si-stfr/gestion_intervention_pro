@@ -1267,6 +1267,29 @@ td {
   border: 1px solid #cbd5e1;
 }
 
+.btn-ajouter-article {
+  width: 100%;
+  margin-top: 4px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #f1c40f;
+  color: #1a1a1a;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-ajouter-article:hover:not(:disabled) {
+  background: #d4ac0d;
+}
+
+.btn-ajouter-article:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .livraison-erreur {
   margin: 0;
   color: #cd2c2e;

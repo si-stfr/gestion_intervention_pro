@@ -171,7 +171,7 @@ export default function LivraisonMagasinFields({
 
               <button
                 type="button"
-                className="btn-modifier"
+                className="btn-ajouter-article"
                 disabled={enCours}
                 onClick={ajouterArticle}
               >
