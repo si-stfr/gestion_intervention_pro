@@ -237,6 +237,44 @@ export default function InterventionsImprimer() {
                 </table>
             </div>
 
+            {/* BON DE RÉCEPTION (livraison en magasin) */}
+            {interventions
+                .filter((item) => item.type_intervention === "Livraison en magasin")
+                .map((item) => (
+                    <div key={`reception-${item.id}`} className="tableau-wrapper" style={{ marginTop: 24 }}>
+                        <div className="mission-title" style={{ marginBottom: 8 }}>
+                            Bon de réception – Fournisseur : {item.fournisseur || "-"}
+                            {item.numero_bon_livraison ? ` – BL n° ${item.numero_bon_livraison}` : ""}
+                        </div>
+                        <table className="tableau-interventions">
+                            <thead>
+                                <tr>
+                                    <th>Article</th>
+                                    <th>Quantité attendue</th>
+                                    <th>Quantité reçue</th>
+                                    <th>État à la réception</th>
+                                    <th>Ajouté au stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(item.materiels || []).map((m) => (
+                                    <tr key={m.id}>
+                                        <td>{[m.type_de_materiel, m.marque_ou_modele].filter(Boolean).join(" – ") || "-"}</td>
+                                        <td>{m.quantite}</td>
+                                        <td>{m.quantite_recue ?? "-"}</td>
+                                        <td>{m.etat_reception || "-"}</td>
+                                        <td>
+                                            {item.statut === "ABOUTI" && item.stock_mis_a_jour
+                                                ? (m.etat_reception === "Abîmé" ? "Non (refusé)" : `+${m.quantite_recue ?? 0}`)
+                                                : "-"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ))}
+
             {/* SECTION SIGNATURES */}
             <div className="signatures-section">
                 <div className="signature-line">

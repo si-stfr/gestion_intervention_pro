@@ -50,6 +50,7 @@ class TypeIntervention(str, enum.Enum):
     INTERVENTION_ELECTRICITE = "Intervention Electricité"
     INTERVENTION_BATIMENTAIRE = "Intervention Bâtimentaire"
     LIVRAISON = "Livraison"
+    LIVRAISON_MAGASIN = "Livraison en magasin"
     INSTALLATION = "Installation"
     LIVRAISON_INSTALLATION = "Livraison + Installation"
     STOCKAGE = "Stockage"
@@ -103,6 +104,12 @@ class Intervention(Base):
     )
 
     type_intervention_autre = Column(String(255))
+
+    # --- Livraison en magasin (réception de marchandises dans le stock du Magasin) ---
+    fournisseur = Column(String(255), nullable=True)
+    numero_bon_livraison = Column(String(100), nullable=True)
+    # passe à True quand les quantités reçues ont été ajoutées au stock (évite un double ajout)
+    stock_mis_a_jour = Column(Boolean, default=False)
 
     services_de_la_commune = Column(Text, nullable=True)
     sites_de_la_commune = Column(Text, nullable=True)

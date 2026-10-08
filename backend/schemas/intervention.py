@@ -69,6 +69,14 @@ class MaterielResponse(BaseModel):
 # =========================================================
 # UPDATE INTERVENTION (TECHNICIEN)
 # =========================================================
+class LigneReception(BaseModel):
+    """Réception d'un article d'une livraison en magasin."""
+
+    materiel_id: int
+    quantite_recue: int
+    etat_reception: Optional[str] = None
+
+
 class InterventionTechnicienUpdate(BaseModel):
     """
     Champs modifiables par le technicien uniquement
@@ -86,6 +94,9 @@ class InterventionTechnicienUpdate(BaseModel):
     date_verification: Optional[date] = None
     resultat_intervention: Optional[ResultatIntervention] = None
     piece_jointe: Optional[str] = None
+
+    # livraison en magasin
+    materiels_recus: Optional[List[LigneReception]] = None
 
 
 # =========================================================
@@ -151,6 +162,10 @@ class InterventionUpdate(BaseModel):
 
     type_intervention: Optional[str] = None
     type_intervention_autre: Optional[str] = None
+    fournisseur: Optional[str] = None
+    numero_bon_livraison: Optional[str] = None
+    # articles de l'intervention : [{"id": ..., "quantite": ...}] (remplace la liste actuelle)
+    materiels: Optional[List[dict]] = None
     services_de_la_commune: Optional[List[str]] = None
     sites_de_la_commune: Optional[List[str]] = None
 

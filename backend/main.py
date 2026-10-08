@@ -14,6 +14,8 @@ from database import (
     ensure_type_intervention_values,
     ensure_user_manager_column,
     ensure_heure_columns,
+    ensure_livraison_magasin_columns,
+    ensure_materiels_retires_interventions_terminees,
     SessionLocal,
 )
 from database import engine
@@ -64,6 +66,8 @@ ensure_urgence_priorite_echeance_dropped()
 ensure_type_intervention_values()
 ensure_user_manager_column()
 ensure_heure_columns()
+ensure_livraison_magasin_columns()
+ensure_materiels_retires_interventions_terminees()
 
 # =========================================================
 # NETTOYAGE DES INTERVENTIONS TERMINÉES DE PLUS D'1 AN

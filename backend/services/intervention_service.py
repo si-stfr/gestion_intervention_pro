@@ -2,12 +2,240 @@ import base64
 import json
 import re
 from datetime import date, datetime, timedelta
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from models.intervention import Intervention, StatutIntervention
+from models.intervention import Intervention, StatutIntervention, TypeIntervention
 from models.user import User
 from models.materiel import Materiel
 from models.intervention_matériel import intervention_materiel
+
+# =========================================================
+# LIVRAISON EN MAGASIN : réception de marchandises dans le stock
+# =========================================================
+ETAT_CONFORME = "Conforme"
+ETAT_ABIME = "Abîmé"
+ETATS_RECEPTION = (ETAT_CONFORME, ETAT_ABIME)
+LIEU_STOCK_MAGASIN = "Magasin (CTM)"
+
+
+def is_livraison_magasin(intervention) -> bool:
+    type_value = (
+        intervention.type_intervention.value
+        if hasattr(intervention.type_intervention, "value")
+        else intervention.type_intervention
+    )
+    return type_value == TypeIntervention.LIVRAISON_MAGASIN.value
+
+
+def get_lignes_reception(db: Session, intervention_id: int):
+    """Une ligne par article de la livraison : attendu, reçu et état."""
+    rows = db.execute(
+        select(
+            intervention_materiel.c.materiel_id,
+            intervention_materiel.c.quantite,
+            intervention_materiel.c.quantite_recue,
+            intervention_materiel.c.etat_reception,
+        ).where(intervention_materiel.c.intervention_id == intervention_id)
+    ).all()
+    return [
+        {
+            "materiel_id": r[0],
+            "quantite_attendue": r[1],
+            "quantite_recue": r[2],
+            "etat_reception": r[3],
+        }
+        for r in rows
+    ]
+
+
+def retirer_materiels_intervention_terminee(db: Session, intervention: Intervention):
+    """
+    Une intervention « Terminée » n'a plus de matériel concerné : on le retire de sa liste.
+    Exception : une livraison en magasin garde ses articles (c'est son bon de réception).
+    Ne fait pas de commit (même transaction que le changement de statut).
+    """
+    if is_livraison_magasin(intervention):
+        return
+    db.execute(
+        intervention_materiel.delete().where(
+            intervention_materiel.c.intervention_id == intervention.id
+        )
+    )
+
+
+def definir_articles(db: Session, intervention: Intervention, articles):
+    """
+    Remplace la liste des articles d'une intervention (id + quantité attendue).
+    Les quantités déjà reçues des articles conservés sont gardées.
+    Une livraison dont le stock est déjà mis à jour ne peut plus changer d'articles.
+    Une intervention terminée (hors livraison en magasin) n'a plus de matériel concerné.
+    """
+    statut = intervention.statut.value if hasattr(intervention.statut, "value") else intervention.statut
+    if statut == StatutIntervention.ABOUTI.value and not is_livraison_magasin(intervention):
+        return
+
+    nouveaux = {}
+    for article in articles or []:
+        materiel_id = article.get("id") or article.get("materiel_id")
+        quantite = article.get("quantite")
+        if quantite is None:
+            quantite = article.get("quantiteDemande", 1)
+        try:
+            quantite = int(quantite)
+        except (TypeError, ValueError):
+            quantite = 0
+        if not materiel_id or quantite < 1:
+            raise ValueError("La quantité attendue d'un article doit être au moins 1")
+        nouveaux[int(materiel_id)] = quantite
+
+    existants = {
+        l["materiel_id"]: l["quantite_attendue"]
+        for l in get_lignes_reception(db, intervention.id)
+    }
+
+    if nouveaux == existants:
+        return
+
+    if intervention.stock_mis_a_jour:
+        raise ValueError("Le stock de cette livraison a déjà été mis à jour : ses articles ne peuvent plus être modifiés")
+
+    if nouveaux:
+        trouves = {
+            m.id for m in db.query(Materiel).filter(Materiel.id.in_(list(nouveaux))).all()
+        }
+        if trouves != set(nouveaux):
+            raise ValueError("Article introuvable dans le stock")
+
+    # articles retirés
+    for materiel_id in set(existants) - set(nouveaux):
+        db.execute(
+            intervention_materiel.delete().where(
+                intervention_materiel.c.intervention_id == intervention.id,
+                intervention_materiel.c.materiel_id == materiel_id,
+            )
+        )
+    # articles conservés : nouvelle quantité attendue
+    for materiel_id in set(existants) & set(nouveaux):
+        db.execute(
+            update(intervention_materiel)
+            .where(
+                intervention_materiel.c.intervention_id == intervention.id,
+                intervention_materiel.c.materiel_id == materiel_id,
+            )
+            .values(quantite=nouveaux[materiel_id])
+        )
+    # articles ajoutés
+    for materiel_id in set(nouveaux) - set(existants):
+        db.execute(
+            intervention_materiel.insert().values(
+                intervention_id=intervention.id,
+                materiel_id=materiel_id,
+                quantite=nouveaux[materiel_id],
+            )
+        )
+
+
+def verifier_livraison_modifiee(db: Session, intervention: Intervention, update_data: dict, articles):
+    """
+    Contrôles à la modification d'une intervention qui est (ou devient) une livraison en magasin :
+    fournisseur obligatoire et au moins un article. Efface ces champs si ce n'est plus une livraison.
+    """
+    type_value = update_data.get("type_intervention", intervention.type_intervention)
+    type_value = type_value.value if hasattr(type_value, "value") else type_value
+
+    if type_value != TypeIntervention.LIVRAISON_MAGASIN.value:
+        update_data["fournisseur"] = None
+        update_data["numero_bon_livraison"] = None
+        return
+
+    fournisseur = (update_data.get("fournisseur", intervention.fournisseur) or "").strip()
+    if not fournisseur:
+        raise ValueError("Le fournisseur est obligatoire pour une livraison en magasin")
+    update_data["fournisseur"] = fournisseur
+    update_data["numero_bon_livraison"] = (
+        (update_data.get("numero_bon_livraison", intervention.numero_bon_livraison) or "").strip() or None
+    )
+
+    nb_articles = len(articles) if articles is not None else len(get_lignes_reception(db, intervention.id))
+    if nb_articles == 0:
+        raise ValueError("Ajoutez au moins un article attendu pour une livraison en magasin")
+
+
+def enregistrer_reception(db: Session, intervention: Intervention, lignes):
+    """
+    Le technicien indique, pour chaque article, la quantité reçue et son état.
+    Ne modifie PAS le stock : celui-ci n'est mis à jour qu'à la validation du manager.
+    """
+    if not is_livraison_magasin(intervention):
+        raise ValueError("Cette intervention n'est pas une livraison en magasin")
+
+    if intervention.stock_mis_a_jour:
+        raise ValueError("Le stock de cette livraison a déjà été mis à jour")
+
+    attendus = {l["materiel_id"] for l in get_lignes_reception(db, intervention.id)}
+
+    for ligne in lignes or []:
+        materiel_id = ligne.get("materiel_id")
+        if materiel_id not in attendus:
+            raise ValueError("Article inconnu pour cette livraison")
+
+        try:
+            quantite_recue = int(ligne.get("quantite_recue"))
+        except (TypeError, ValueError):
+            raise ValueError("La quantité reçue doit être un nombre entier")
+        if quantite_recue < 0:
+            raise ValueError("La quantité reçue ne peut pas être négative")
+
+        etat = ligne.get("etat_reception") or ETAT_CONFORME
+        if etat not in ETATS_RECEPTION:
+            raise ValueError("État de réception invalide")
+
+        db.execute(
+            update(intervention_materiel)
+            .where(
+                intervention_materiel.c.intervention_id == intervention.id,
+                intervention_materiel.c.materiel_id == materiel_id,
+            )
+            .values(quantite_recue=quantite_recue, etat_reception=etat)
+        )
+
+
+def verifier_reception_complete(db: Session, intervention: Intervention):
+    """Toutes les lignes de la livraison doivent avoir une quantité reçue."""
+    lignes = get_lignes_reception(db, intervention.id)
+    if not lignes:
+        raise ValueError("Cette livraison ne contient aucun article")
+    if any(l["quantite_recue"] is None for l in lignes):
+        raise ValueError(
+            "Renseignez la quantité reçue de chaque article avant d'envoyer la livraison au manager"
+        )
+
+
+def appliquer_stock_livraison(db: Session, intervention: Intervention):
+    """
+    Ajoute au stock les quantités reçues en bon état. À appeler quand la livraison passe
+    à « Terminée ». Ne fait pas de commit : l'appelant valide tout dans la même transaction.
+    Un article « Abîmé » est refusé : il n'entre pas dans le stock.
+    """
+    if not is_livraison_magasin(intervention) or intervention.stock_mis_a_jour:
+        return
+
+    verifier_reception_complete(db, intervention)
+
+    for ligne in get_lignes_reception(db, intervention.id):
+        if ligne["etat_reception"] == ETAT_ABIME or not ligne["quantite_recue"]:
+            continue
+        materiel = (
+            db.query(Materiel)
+            .filter(Materiel.id == ligne["materiel_id"])
+            .with_for_update()
+            .first()
+        )
+        if materiel:
+            materiel.quantite = (materiel.quantite or 0) + ligne["quantite_recue"]
+
+    intervention.stock_mis_a_jour = True
 
 MANUAL_STATUTS = [
     StatutIntervention.EN_ATTENTE_VALIDATION.value,
@@ -258,6 +486,42 @@ def send_completion_notification_email(intervention: Intervention):
     elif piece_jointe and piece_jointe.startswith("http"):
         image_html = f'<p><img src="{piece_jointe}" alt="Photo de l\'intervention" style="max-width:400px;border-radius:8px;"></p>'
 
+    # --- détail de la réception pour une livraison en magasin ---
+    livraison_html = ""
+    livraison_text = ""
+    if is_livraison_magasin(intervention):
+        from database import SessionLocal
+
+        with SessionLocal() as sdb:
+            lignes = get_lignes_reception(sdb, intervention.id)
+            noms = {
+                m.id: " ".join(filter(None, [m.type_de_materiel, m.marque_ou_modele]))
+                for m in sdb.query(Materiel)
+                .filter(Materiel.id.in_([l["materiel_id"] for l in lignes] or [0]))
+                .all()
+            }
+        lignes_html = "".join(
+            f'<tr><td style="padding:2px 8px;">{noms.get(l["materiel_id"], "Article")}</td>'
+            f'<td style="padding:2px 8px;">attendu : {l["quantite_attendue"]}</td>'
+            f'<td style="padding:2px 8px;">reçu : {l["quantite_recue"] if l["quantite_recue"] is not None else "-"}</td>'
+            f'<td style="padding:2px 8px;">{l["etat_reception"] or "-"}</td></tr>'
+            for l in lignes
+        )
+        livraison_html = (
+            f'<tr><td style="padding:4px 8px;"><strong>Fournisseur</strong></td><td style="padding:4px 8px;">{intervention.fournisseur or "-"}</td></tr>'
+            f'<tr><td style="padding:4px 8px;"><strong>N° de bon de livraison</strong></td><td style="padding:4px 8px;">{intervention.numero_bon_livraison or "-"}</td></tr>'
+            f'<tr><td style="padding:4px 8px;"><strong>Articles</strong></td><td style="padding:4px 8px;"><table>{lignes_html}</table></td></tr>'
+        )
+        livraison_text = (
+            f"Fournisseur : {intervention.fournisseur or '-'}\n"
+            f"N° de bon de livraison : {intervention.numero_bon_livraison or '-'}\n"
+            + "".join(
+                f"- {noms.get(l['materiel_id'], 'Article')} : attendu {l['quantite_attendue']}, "
+                f"reçu {l['quantite_recue'] if l['quantite_recue'] is not None else '-'} ({l['etat_reception'] or '-'})\n"
+                for l in lignes
+            )
+        )
+
     html_body = f"""
     <div style="font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;">
         <h2 style="color:#0074c7;">Intervention {statut_label}</h2>
@@ -272,6 +536,7 @@ def send_completion_notification_email(intervention: Intervention):
             <tr><td style="padding:4px 8px;"><strong>Date de fin</strong></td><td style="padding:4px 8px;">{intervention.date_fin or '-'}</td></tr>
             <tr><td style="padding:4px 8px;"><strong>Actions réalisées</strong></td><td style="padding:4px 8px;">{intervention.actions_realisees or '-'}</td></tr>
             <tr><td style="padding:4px 8px;"><strong>Commentaire</strong></td><td style="padding:4px 8px;">{intervention.commentaire or '-'}</td></tr>
+            {livraison_html}
         </table>
         {image_html}
         <p>Ce message est envoyé automatiquement, merci de ne pas y répondre.</p>
@@ -287,6 +552,7 @@ def send_completion_notification_email(intervention: Intervention):
         f"Date de fin : {intervention.date_fin or '-'}\n"
         f"Actions réalisées : {intervention.actions_realisees or '-'}\n"
         f"Commentaire : {intervention.commentaire or '-'}\n"
+        + livraison_text
     )
 
     try:
@@ -323,6 +589,12 @@ def validate_intervention(
         normalized_piece = normalize_piece_jointe(piece_jointe)
         intervention.piece_jointe = normalized_piece
 
+    # Livraison en magasin terminée : les quantités reçues en bon état entrent en stock
+    # (même transaction que le changement de statut : tout passe ou rien).
+    if statut == StatutIntervention.ABOUTI.value:
+        appliquer_stock_livraison(db, intervention)
+        retirer_materiels_intervention_terminee(db, intervention)
+
     intervention.statut = StatutIntervention(statut)
 
     # Date de complétion : toujours la date du jour, non modifiable par le Manager.
@@ -356,6 +628,10 @@ def send_to_manager(
         manager.profil.value if hasattr(manager.profil, "value") else manager.profil
     ) != "MANAGER":
         raise ValueError("L'utilisateur n'est pas un manager")
+
+    # livraison en magasin : le technicien doit avoir saisi les quantités reçues
+    if is_livraison_magasin(intervention):
+        verifier_reception_complete(db, intervention)
 
     intervention.manager_id = manager_id
     intervention.date_verification = date_verification
@@ -502,6 +778,34 @@ def create_intervention(db: Session, data: dict):
     print("DATA REÇU =", data)  # DEBUG IMPORTANT
 
     validate_dates(data["date_debut"], data["date_fin"])
+
+    # --- Livraison en magasin : fournisseur et articles attendus obligatoires ---
+    if data.get("type_intervention") == TypeIntervention.LIVRAISON_MAGASIN.value:
+        data["fournisseur"] = (data.get("fournisseur") or "").strip()
+        if not data["fournisseur"]:
+            raise ValueError("Le fournisseur est obligatoire pour une livraison en magasin")
+        data["numero_bon_livraison"] = (data.get("numero_bon_livraison") or "").strip() or None
+        articles = data.get("materiels") or data.get("materiels_ids")
+        if not articles:
+            raise ValueError("Ajoutez au moins un article attendu pour une livraison en magasin")
+        for article in data.get("materiels") or []:
+            quantite = article.get("quantite")
+            if quantite is None:
+                quantite = article.get("quantiteDemande", 1)
+            try:
+                quantite = int(quantite)
+            except (TypeError, ValueError):
+                quantite = 0
+            if quantite < 1:
+                raise ValueError("La quantité attendue d'un article doit être au moins 1")
+        # la destination est le service « Magasin » du CTM
+        if not data.get("services_de_la_commune"):
+            data["services_de_la_commune"] = ["Magasin"]
+            data["sites_de_la_commune"] = ["CTM"]
+    else:
+        # ces champs n'ont de sens que pour une livraison en magasin
+        data.pop("fournisseur", None)
+        data.pop("numero_bon_livraison", None)
 
     technicien_id = data.get("technicien_id")
     if technicien_id and not is_technicien_available(

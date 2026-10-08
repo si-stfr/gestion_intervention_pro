@@ -52,6 +52,9 @@ export default function TechnicienDashboard() {
 
   const [editId, setEditId] = useState(null);
 
+  // Livraison en magasin : une ligne par article (quantité reçue + état)
+  const [receptions, setReceptions] = useState([]);
+
   const techniciens = users.filter(u => u.profil === "TECHNICIEN");
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -196,6 +199,7 @@ export default function TechnicienDashboard() {
     });
 
     setEditId(null);
+    setReceptions([]);
   };
 
   // =========================================
@@ -234,12 +238,37 @@ export default function TechnicienDashboard() {
 
       manager_id: item.manager_id || "",
     });
+
+    // Livraison en magasin : on prépare la saisie des quantités reçues
+    // (par défaut = quantité attendue, à corriger si la livraison est incomplète)
+    setReceptions(
+      item.type_intervention === "Livraison en magasin"
+        ? (item.materiels || []).map((m) => ({
+            materiel_id: m.id,
+            nom: m.marque_ou_modele || m.type_de_materiel || "Article",
+            attendu: m.quantite ?? 1,
+            quantite_recue: m.quantite_recue ?? m.quantite ?? 1,
+            etat_reception: m.etat_reception || "Conforme",
+          }))
+        : []
+    );
+
+    if (item.type_intervention === "Livraison en magasin" && (item.materiels || []).length === 0) {
+      alert(
+        "Cette livraison ne contient aucun article. Demandez à l'Admin ou à l'Intervenant qui l'a créée de la modifier pour ajouter les articles attendus."
+      );
+    }
   };
 
   // =========================================
   // UPDATE
   // =========================================
   const updateIntervention = async () => {
+    if (receptions.some((r) => r.quantite_recue === "" || Number(r.quantite_recue) < 0)) {
+      alert("Indiquez une quantité reçue (0 ou plus) pour chaque article");
+      return;
+    }
+
     try {
       await api.put(`/intervention/${editId}/technicien`, {
 
@@ -260,6 +289,16 @@ export default function TechnicienDashboard() {
         resultat_intervention: form.resultat_intervention,
 
         piece_jointe: form.piece_jointe || null,
+
+        // livraison en magasin : quantités reçues et état de chaque article
+        materiels_recus:
+          receptions.length > 0
+            ? receptions.map((r) => ({
+                materiel_id: r.materiel_id,
+                quantite_recue: Number(r.quantite_recue),
+                etat_reception: r.etat_reception,
+              }))
+            : undefined,
       });
 
       fetchInterventions();
@@ -430,6 +469,57 @@ export default function TechnicienDashboard() {
                     </option>
                 </select>
 
+                {/* LIVRAISON EN MAGASIN : RÉCEPTION DES ARTICLES */}
+                {receptions.length > 0 && (
+                  <div className="reception-box">
+                    <label>Réception des articles (livraison en magasin)</label>
+                    <p className="reception-aide">
+                      Indiquez la quantité réellement reçue. Un article « Abîmé » est
+                      refusé : il ne sera pas ajouté au stock.
+                    </p>
+
+                    {receptions.map((r) => (
+                      <div key={r.materiel_id} className="reception-ligne">
+                        <div className="reception-nom">
+                          {r.nom} <small>(attendu : {r.attendu})</small>
+                        </div>
+
+                        <input
+                          type="number"
+                          min="0"
+                          value={r.quantite_recue}
+                          onChange={(e) =>
+                            setReceptions((prev) =>
+                              prev.map((x) =>
+                                x.materiel_id === r.materiel_id
+                                  ? { ...x, quantite_recue: e.target.value }
+                                  : x
+                              )
+                            )
+                          }
+                        />
+
+                        <select
+                          value={r.etat_reception}
+                          onChange={(e) =>
+                            setReceptions((prev) =>
+                              prev.map((x) =>
+                                x.materiel_id === r.materiel_id
+                                  ? { ...x, etat_reception: e.target.value }
+                                  : x
+                              )
+                            )
+                          }
+                        >
+                          <option value="Conforme">Conforme</option>
+                          <option value="Abîmé">Abîmé</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+
                 {/* 8. PIÈCE JOINTE */}
                 <label>Pièce jointe (photo)</label>
 
@@ -573,13 +663,18 @@ export default function TechnicienDashboard() {
                     </td>
 
                     {/* 4. Description */}
-                    <td>{item.description_de_la_panne}</td>
+                    <td>
+                      {item.description_de_la_panne}
+                      {item.fournisseur && (
+                        <div><small>Fournisseur : {item.fournisseur}{item.numero_bon_livraison ? ` – BL ${item.numero_bon_livraison}` : ""}</small></div>
+                      )}
+                    </td>
 
                      {/*MATERIEL*/}
                     <td>
                       {item.materiels?.map((m) => (
                         <div key={m.id}>
-                          -{m.marque_ou_modele} (x{m.quantite})
+                          -{m.marque_ou_modele} (x{m.quantite}{m.quantite_recue != null ? ` / reçu ${m.quantite_recue}` : ""}){m.etat_reception === "Abîmé" ? " ⚠ abîmé" : ""}
                         </div>
                       ))}
                     </td>

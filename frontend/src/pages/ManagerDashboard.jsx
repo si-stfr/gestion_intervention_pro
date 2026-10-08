@@ -113,7 +113,11 @@ export default function ManagerDashboard() {
 
         } catch (err) {
             console.error(err);
-            alert("La validation a échoué.");
+            alert(
+                typeof err?.response?.data?.detail === "string"
+                    ? err.response.data.detail
+                    : "La validation a échoué."
+            );
         }
     };
 
@@ -197,7 +201,12 @@ export default function ManagerDashboard() {
                                         <td>{item.titre}</td>
 
                                         {/* 4 DESCRIPTION */}
-                                        <td>{item.description_de_la_panne}</td>
+                                        <td>
+                                            {item.description_de_la_panne}
+                                            {item.fournisseur && (
+                                                <div><small>Fournisseur : {item.fournisseur}{item.numero_bon_livraison ? ` – BL ${item.numero_bon_livraison}` : ""}</small></div>
+                                            )}
+                                        </td>
 
                                         {/* 9 TYPE INTERVENTION */}
                                         <td>{item.type_intervention}</td>
@@ -223,7 +232,7 @@ export default function ManagerDashboard() {
                                         <td>
                                         {item.materiels?.map((m) => (
                                             <div key={m.id}>
-                                            -{m.marque_ou_modele}
+                                            -{m.marque_ou_modele}{m.quantite_recue != null ? ` : reçu ${m.quantite_recue} / attendu ${m.quantite}` : ""}{m.etat_reception === "Abîmé" ? " ⚠ abîmé (refusé)" : ""}{m.quantite_recue != null && m.quantite_recue < m.quantite ? " – ÉCART" : ""}
                                             </div>
                                         ))}
                                         </td>

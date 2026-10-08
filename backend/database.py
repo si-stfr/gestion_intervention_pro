@@ -248,15 +248,64 @@ def ensure_type_intervention_values():
                 )
             ).scalar()
 
-            if column_type and "Intervention Eau" not in column_type:
+            if column_type and "Livraison en magasin" not in column_type:
                 conn.execute(
                     text(
                         "ALTER TABLE interventions MODIFY COLUMN type_intervention "
                         "ENUM('Intervention Eau','Intervention Electricité','Intervention Bâtimentaire',"
-                        "'Livraison','Installation','Livraison + Installation','Stockage',"
+                        "'Livraison','Livraison en magasin','Installation','Livraison + Installation','Stockage',"
                         "'Prêt de Matériel','Mise à jour','Autre') NOT NULL"
                     )
                 )
+        except Exception:
+            pass
+
+
+def ensure_livraison_magasin_columns():
+    """Colonnes de la livraison en magasin : fournisseur, n° de bon, indicateur de stock mis à jour,
+    et quantité reçue / état à la réception dans intervention_materiel."""
+    if not DATABASE_URL:
+        return
+
+    columns = [
+        ("interventions", "fournisseur", "VARCHAR(255) NULL AFTER type_intervention_autre"),
+        ("interventions", "numero_bon_livraison", "VARCHAR(100) NULL AFTER fournisseur"),
+        ("interventions", "stock_mis_a_jour", "TINYINT(1) NOT NULL DEFAULT 0 AFTER numero_bon_livraison"),
+        ("intervention_materiel", "quantite_recue", "INT NULL"),
+        ("intervention_materiel", "etat_reception", "VARCHAR(30) NULL"),
+    ]
+
+    with engine.begin() as conn:
+        for table_name, column_name, ddl in columns:
+            try:
+                exists = conn.execute(
+                    text(
+                        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :t AND column_name = :col"
+                    ),
+                    {"t": table_name, "col": column_name},
+                ).scalar()
+                if not exists:
+                    conn.execute(
+                        text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {ddl}")
+                    )
+            except Exception:
+                pass
+
+
+def ensure_materiels_retires_interventions_terminees():
+    """Les interventions déjà « Terminées » n'ont plus de matériel concerné (sauf livraisons en magasin)."""
+    if not DATABASE_URL:
+        return
+
+    with engine.begin() as conn:
+        try:
+            conn.execute(
+                text(
+                    "DELETE im FROM intervention_materiel im "
+                    "JOIN interventions i ON i.id = im.intervention_id "
+                    "WHERE i.statut = 'ABOUTI' AND i.type_intervention <> 'Livraison en magasin'"
+                )
+            )
         except Exception:
             pass
 

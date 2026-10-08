@@ -1237,3 +1237,71 @@ td {
     white-space: normal;
   }
 }
+
+/* =========================
+   LIVRAISON EN MAGASIN
+========================= */
+.livraison-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 2px solid #0074c7;
+  border-radius: 14px;
+  background: #0074c708;
+}
+
+.livraison-info {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #1e3a5f;
+}
+
+.livraison-nouvel-article {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #cbd5e1;
+}
+
+.livraison-erreur {
+  margin: 0;
+  color: #cd2c2e;
+  font-weight: 600;
+}
+
+.reception-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 2px solid #f1c40f;
+  border-radius: 14px;
+  background: #f1c40f10;
+}
+
+.reception-aide {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.reception-ligne {
+  display: grid;
+  grid-template-columns: 1fr 110px 150px;
+  gap: 10px;
+  align-items: center;
+}
+
+.reception-nom small {
+  color: #475569;
+}
+
+@media (max-width: 500px) {
+  .reception-ligne {
+    grid-template-columns: 1fr;
+  }
+}

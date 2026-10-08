@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar";
 import LieuMapPicker from "../components/LieuMapPicker";
 import LieuPopupButton from "../components/LieuPopupButton";
 import ServicesCommuneSelector from "../components/ServicesCommuneSelector";
+import LivraisonMagasinFields, { TYPE_LIVRAISON_MAGASIN } from "../components/LivraisonMagasinFields";
 import { sortInterventions } from "../utils/sortInterventions";
 import { getAvailableTechniciens } from "../utils/technicienAvailability";
 
@@ -82,6 +83,8 @@ export default function Interventions() {
 
     source_demande: "Direct",
     type_intervention: "Livraison",
+    fournisseur: "",
+    numero_bon_livraison: "",
     type_intervention_autre: "",
     services_de_la_commune: [],
     sites_de_la_commune: [],
@@ -111,6 +114,21 @@ export default function Interventions() {
     interventions,
     editId
   );
+
+  // Livraison en magasin : la destination est le service « Magasin » (site CTM)
+  useEffect(() => {
+    if (
+      form.type_intervention === TYPE_LIVRAISON_MAGASIN &&
+      (form.services_de_la_commune ?? []).length === 0
+    ) {
+      setForm((prev) => ({
+        ...prev,
+        services_de_la_commune: ["Magasin"],
+        sites_de_la_commune: ["CTM"],
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.type_intervention]);
 
   useEffect(() => {
 
@@ -220,6 +238,8 @@ export default function Interventions() {
 
       source_demande: "Direct",
       type_intervention: "Livraison",
+    fournisseur: "",
+    numero_bon_livraison: "",
       type_intervention_autre: "",
       services_de_la_commune: [],
       sites_de_la_commune: [],
@@ -300,6 +320,17 @@ export default function Interventions() {
         alert("Veuillez choisir un technicien");
         return;
         }
+
+    if (form.type_intervention === TYPE_LIVRAISON_MAGASIN) {
+      if (!form.fournisseur?.trim()) {
+        alert("Veuillez saisir le fournisseur de la livraison");
+        return;
+      }
+      if (materielsSelectionnes.length === 0) {
+        alert("Ajoutez au moins un article attendu pour la livraison");
+        return;
+      }
+    }
 
     if (renewId) {
       const confirmRenew = window.confirm(
@@ -392,6 +423,10 @@ export default function Interventions() {
 
     setEditId(item.id);
     setShowMaterielDropdown(false);
+    // articles déjà liés à l'intervention (ils sont renvoyés à l'enregistrement)
+    setMaterielsSelectionnes(
+      (item.materiels || []).map((m) => ({ ...m, quantiteDemande: m.quantite ?? 1 }))
+    );
 
     setForm({
 
@@ -414,6 +449,8 @@ export default function Interventions() {
 
       type_intervention_autre:
         item.type_intervention_autre ?? "",
+      fournisseur: item.fournisseur ?? "",
+      numero_bon_livraison: item.numero_bon_livraison ?? "",
 
       services_de_la_commune: item.services_de_la_commune ?? [],
       sites_de_la_commune: item.sites_de_la_commune ?? [],
@@ -474,6 +511,8 @@ export default function Interventions() {
 
       type_intervention_autre:
         item.type_intervention_autre ?? "",
+      fournisseur: item.fournisseur ?? "",
+      numero_bon_livraison: item.numero_bon_livraison ?? "",
 
       services_de_la_commune: item.services_de_la_commune ?? [],
       sites_de_la_commune: item.sites_de_la_commune ?? [],
@@ -528,6 +567,11 @@ export default function Interventions() {
         technicien_id: form.technicien_id ? Number(form.technicien_id): null,
 
         manager_id: form.manager_id ? Number(form.manager_id) : null,
+
+        materiels: materielsSelectionnes.map((m) => ({
+          id: m.id,
+          quantite: m.quantiteDemande ?? 1,
+        })),
 
         source_demande:
           form.source_demande === "" ? null : form.source_demande,
@@ -769,6 +813,7 @@ export default function Interventions() {
                 <option>Intervention Electricité</option>
                 <option>Intervention Bâtimentaire</option>
                 <option>Livraison</option>
+                <option>Livraison en magasin</option>
                 <option>Installation</option>
                 <option>Livraison + Installation</option>
                 <option>Stockage</option>
@@ -803,6 +848,13 @@ export default function Interventions() {
                 }
               />
 
+              <LivraisonMagasinFields
+                form={form}
+                setForm={setForm}
+                setMateriels={setMateriels}
+                setMaterielsSelectionnes={setMaterielsSelectionnes}
+              />
+
               {/*SELECTION MATERIEL*/}
 
                 <button
@@ -810,7 +862,10 @@ export default function Interventions() {
                   className="mat-select-toggle"
                   onClick={() => setShowMaterielDropdown(v => !v)}
                 >
-                  {showMaterielDropdown ? "▲" : "▼"} Sélectionnez le(s) matériel(s) concerné(s) (Facultatif)
+                  {showMaterielDropdown ? "▲" : "▼"}{" "}
+                  {form.type_intervention === TYPE_LIVRAISON_MAGASIN
+                    ? "Articles attendus (obligatoire) : sélectionnez dans le stock"
+                    : "Sélectionnez le(s) matériel(s) concerné(s) (Facultatif)"}
                 </button>
 
               {/* MATERIELS SELECTIONNES (toujours visibles si non vide) */}
@@ -1202,6 +1257,9 @@ export default function Interventions() {
                     {/* DESCRIPTION */}
                     <td>
                       {item.description_de_la_panne}
+                      {item.fournisseur && (
+                        <div><small>Fournisseur : {item.fournisseur}{item.numero_bon_livraison ? ` – BL ${item.numero_bon_livraison}` : ""}</small></div>
+                      )}
                     </td>
 
                     {/*MATERIEL*/}
@@ -1210,7 +1268,7 @@ export default function Interventions() {
                       {item.materiels?.map((m) => (
   
                         <div key={m.id}>
-                          {m.marque_ou_modele} (x{m.quantite})
+                          {m.marque_ou_modele} (x{m.quantite}{m.quantite_recue != null ? ` / reçu ${m.quantite_recue}` : ""}){m.etat_reception === "Abîmé" ? " ⚠ abîmé" : ""}
                         </div>
                       
                     ))}

@@ -25,6 +25,11 @@ from services.intervention_service import (
     normalize_piece_jointe,
     cleanup_old_completed_interventions,
     send_completion_notification_email,
+    enregistrer_reception,
+    appliquer_stock_livraison,
+    retirer_materiels_intervention_terminee,
+    definir_articles,
+    verifier_livraison_modifiee,
 )
 
 router = APIRouter(prefix="/intervention", tags=["Intervention"])
@@ -54,12 +59,19 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
             intervention_materiel.c.intervention_id,
             intervention_materiel.c.materiel_id,
             intervention_materiel.c.quantite,
+            intervention_materiel.c.quantite_recue,
+            intervention_materiel.c.etat_reception,
         )
     ).all()
 
     quantites_par_intervention = {}
-    for intervention_id, materiel_id, qte in all_quantites_rows:
+    receptions_par_intervention = {}
+    for intervention_id, materiel_id, qte, qte_recue, etat in all_quantites_rows:
         quantites_par_intervention.setdefault(intervention_id, {})[materiel_id] = qte
+        receptions_par_intervention.setdefault(intervention_id, {})[materiel_id] = (
+            qte_recue,
+            etat,
+        )
 
     result = []
 
@@ -68,6 +80,7 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
         statut = compute_statut(i)
 
         quantites = quantites_par_intervention.get(i.id, {})
+        receptions = receptions_par_intervention.get(i.id, {})
         result.append(
             {
                 # =========================
@@ -111,6 +124,10 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                 # DETAILS
                 # =========================
                 "type_intervention_autre": i.type_intervention_autre,
+                # livraison en magasin
+                "fournisseur": i.fournisseur,
+                "numero_bon_livraison": i.numero_bon_livraison,
+                "stock_mis_a_jour": bool(i.stock_mis_a_jour),
                 "services_de_la_commune": (
                     json.loads(i.services_de_la_commune)
                     if i.services_de_la_commune
@@ -161,6 +178,9 @@ def get_all(db: Session = Depends(get_db), user=Depends(get_current_user)):
                         "marque_ou_modele": m.marque_ou_modele,
                         "numero_de_serie": m.numero_de_serie,
                         "quantite": quantites.get(m.id, 1),
+                        "type_de_materiel": m.type_de_materiel,
+                        "quantite_recue": receptions.get(m.id, (None, None))[0],
+                        "etat_reception": receptions.get(m.id, (None, None))[1],
                     }
                     for m in i.materiels
                 ],
@@ -279,6 +299,9 @@ def update(
 
     update_data = data.model_dump(exclude_unset=True, exclude_none=True)
 
+    # liste des articles (matériels) de l'intervention : remplacée uniquement si elle est envoyée
+    articles = update_data.pop("materiels", None)
+
     # seuls le Technicien et l'Admin peuvent modifier les dates de début/fin
     if user.profil.value == "INTERVENANT":
         update_data.pop("date_debut", None)
@@ -324,6 +347,9 @@ def update(
     )
 
     try:
+        verifier_livraison_modifiee(db, intervention, update_data, articles)
+        if articles is not None:
+            definir_articles(db, intervention, articles)
         result = update_intervention(db, intervention, update_data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -354,6 +380,14 @@ def update_technicien(
     # Le technicien termine l'intervention :
     # le statut passe automatiquement en attente de validation.
     update_data["statut"] = "EN_ATTENTE_VALIDATION"
+
+    # Livraison en magasin : quantités reçues et état de chaque article
+    lignes_reception = update_data.pop("materiels_recus", None)
+    if lignes_reception is not None:
+        try:
+            enregistrer_reception(db, intervention, lignes_reception)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
     # cohérence date/heure de début et de fin
     new_debut = update_data.get("date_debut", intervention.date_debut)
@@ -396,6 +430,16 @@ def update_intervention(db, intervention, update_data):
 
     for key, value in update_data.items():
         setattr(intervention, key, value)
+
+    # Livraison en magasin terminée (ex. par l'Admin) : ajout des quantités reçues au stock
+    statut_final = (
+        intervention.statut.value
+        if hasattr(intervention.statut, "value")
+        else intervention.statut
+    )
+    if statut_final == StatutIntervention.ABOUTI.value:
+        appliquer_stock_livraison(db, intervention)
+        retirer_materiels_intervention_terminee(db, intervention)
 
     db.commit()
     db.refresh(intervention)
