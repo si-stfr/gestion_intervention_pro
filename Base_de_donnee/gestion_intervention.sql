@@ -269,15 +269,17 @@ CREATE TABLE `users` (
 -- Déchargement des données de la table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_at`, `hashed_password`) VALUES
-(4, 'Lesi', 'philipe.lesi@gmail.com', '0690889911', 'ADMIN', '2026-05-18 14:30:00', '$2b$12$/v1S/fIGloe2BfFFM5rbz.mV2miE0iXIUHBBQLKWAuyn7F7rxL77y'),
-(5, 'Tidgy', 'Carnan.tidgy@gmail.com', '0690775522', 'TECHNICIEN', '2026-05-18 14:25:19', '$2b$10$0qCp1hd.1Wt15vjLA.AoMeQ1XDJ64U6zlYEKMyYKghNP6EqIzJ.f6'),
-(6, 'Lory', 'Lory.hero@outlook.fr', '0690778855', 'INTERVENANT', '2026-05-18 14:25:46', '$2b$10$yOXGD2i8ZJd8Blee3fe1puhvfVSJ9LfqXHg7yAc5xRox0Ek6wvh0G'),
-(7, 'Mark', 'Mark.evans@gmail.com', '0690775533', 'MANAGER', '2026-05-19 18:52:50', '$2b$10$vljOi2XobbwLXGKAyel2duqY.uq/wwru3ESXjIOmp5r9oxsD/LoGi'),
-(8, 'Axel', 'axel.blaze@gmail.com', '00690101010', 'INTERVENANT', '2026-05-23 01:07:17', '$2b$12$Zk.Up2Yg.tZvIKvWVwQeTubDluaCbFnd4LWxI1rlEknR66os3Q5j.'),
-(9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 04:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS'),
-(10, 'Rayapin', 'Grayapin@ville-saintfrancois.fr', '0690489010', 'INTERVENANT', '2026-09-10 19:14:45', '$2b$12$0z.HgZEHjJ6HDhOXt3JtneKia2s1MkAsnBZEyRU5dSE0VnE7L4E1S'),
-(11, 'Thierry', 'TRAGHOUNANDAN@ville-saintfrancois.fr', '0690799466', 'MANAGER', '2026-10-05 09:57:50', '$2b$12$sEO8epR1bqKtSElDz3kPjeNIE9t9WwTLBBxJuWCg9xBKXkX7eZLdS');
+INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_at`, `hashed_password`, `manager_id`) VALUES
+(4, 'Lesi', 'philipe.lesi@gmail.com', '0690889911', 'ADMIN', '2026-05-18 14:30:00', '$2b$12$/v1S/fIGloe2BfFFM5rbz.mV2miE0iXIUHBBQLKWAuyn7F7rxL77y', NULL),
+(5, 'Tidgy', 'Carnan.tidgy@gmail.com', '0690775522', 'TECHNICIEN', '2026-05-18 14:25:19', '$2b$10$0qCp1hd.1Wt15vjLA.AoMeQ1XDJ64U6zlYEKMyYKghNP6EqIzJ.f6', 7),
+(6, 'Lory', 'Lory.marie02@outlook.fr', '0690778855', 'INTERVENANT', '2026-05-18 14:25:46', '$2b$10$yOXGD2i8ZJd8Blee3fe1puhvfVSJ9LfqXHg7yAc5xRox0Ek6wvh0G', NULL),
+(7, 'Mark', 'Mark.evans@gmail.com', '0690775533', 'MANAGER', '2026-05-19 18:52:50', '$2b$10$vljOi2XobbwLXGKAyel2duqY.uq/wwru3ESXjIOmp5r9oxsD/LoGi', NULL),
+(8, 'Axel', 'axel.blaze@gmail.com', '00690101010', 'INTERVENANT', '2026-05-23 01:07:17', '$2b$12$Zk.Up2Yg.tZvIKvWVwQeTubDluaCbFnd4LWxI1rlEknR66os3Q5j.', NULL),
+(9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 04:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS', NULL),
+(10, 'Rayapin', 'Grayapin@ville-saintfrancois.fr', '0690489010', 'INTERVENANT', '2026-09-10 19:14:45', '$2b$12$0z.HgZEHjJ6HDhOXt3JtneKia2s1MkAsnBZEyRU5dSE0VnE7L4E1S', NULL),
+(11, 'Thierry', 'TRAGHOUNANDAN@ville-saintfrancois.fr', '7994665', 'MANAGER', '2026-10-05 13:45:50', '$2b$12$voVTeOe.0evxMrlcAs.npukgYh0paYAnh7rAy0bmg0/fVlUwNCBeK', NULL),
+(12, 'Manager Elec', 'ChElec@gmail.com', '775533', 'MANAGER', '2026-10-09 13:09:32', '$2b$12$Rrt1TjO9J2EgBqQnLWpq2OVTeYDY6a0d2D.za3nFutl9hntWv5BVW', NULL);
+(13, 'Technicien Elec', 'TechElec@gmail.com', '886611', 'TECHNICIEN', '2026-10-09 13:17:12', '$2b$12$3WjCDyfrBSYUPTGUJfMEKOKifX6y3RMOa.8PAFqt2sk8af87BbYQK', 12);
 
 --
 -- Index pour les tables déchargées
