@@ -11,6 +11,7 @@ Mark : Legardien : manager
 Rayapin : GRayapin : intervenant
 Thierry : Manager : Manager
 Manager Elec : 97118 : Manager
+Technicien Elec : 97118 : Technicien
 
 Site pour hébergement :
 Frontend : Vercel (pour lancer le frontend en localhost utilisez la commande : npm run dev -- --host 127.0.0.1 )
