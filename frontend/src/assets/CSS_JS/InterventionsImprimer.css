@@ -449,8 +449,10 @@
     }
 
     .imprimer-page {
-        padding: 0;
+        padding: 0 4mm;
         margin: 0;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     body {
@@ -469,6 +471,56 @@
     .tableau-interventions td,
     .tableau-interventions th {
         border: 1px solid #000 !important;
-        padding: 8px !important;
+        padding: 4px 3px !important;
     }
+
+    /* Le tableau doit tenir dans la largeur de la page imprimée
+       (sur téléphone, le côté droit était coupé) */
+    .tableau-wrapper {
+        overflow: visible;
+    }
+
+    .tableau-interventions {
+        table-layout: fixed;
+        width: 100% !important;
+        font-size: 9px;
+        line-height: 1.3;
+    }
+
+    .tableau-interventions th,
+    .tableau-interventions td {
+        max-width: none;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .tableau-interventions th {
+        font-size: 8.5px;
+    }
+
+    .attachment-open-btn {
+        padding: 2px 4px;
+        font-size: 8px;
+        white-space: nowrap;
+    }
+
+    .tableau-principal th:nth-child(1), .tableau-principal td:nth-child(1),
+    .tableau-principal th:nth-child(4), .tableau-principal td:nth-child(4),
+    .tableau-principal th:nth-child(5), .tableau-principal td:nth-child(5) {
+        width: 12.5%;
+    }
+
+    .tableau-principal td:nth-child(1),
+    .tableau-principal td:nth-child(4),
+    .tableau-principal td:nth-child(5) {
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .tableau-principal th:nth-child(2), .tableau-principal td:nth-child(2) { width: 12%; }
+    .tableau-principal th:nth-child(3), .tableau-principal td:nth-child(3) { width: 11%; }
+    .tableau-principal th:nth-child(6), .tableau-principal td:nth-child(6) { width: 10%; }
+    .tableau-principal th:nth-child(7), .tableau-principal td:nth-child(7) { width: 13%; }
+    .tableau-principal th:nth-child(8), .tableau-principal td:nth-child(8) { width: 9%; }
+    .tableau-principal th:nth-child(9), .tableau-principal td:nth-child(9) { width: 10%; }
 }
