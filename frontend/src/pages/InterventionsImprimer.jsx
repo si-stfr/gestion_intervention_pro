@@ -187,7 +187,7 @@ export default function InterventionsImprimer() {
 
             {/* TABLEAU INTERVENTIONS */}
             <div className="tableau-wrapper">
-                <table className="tableau-interventions">
+                <table className="tableau-interventions tableau-principal">
                     <thead>
                         <tr>
                             <th>Dates de la demande</th>

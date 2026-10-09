@@ -327,6 +327,108 @@
 }
 
 /* ============================
+   MOBILE : le tableau est réduit pour tenir dans l'écran
+   (écran uniquement, l'impression papier n'est pas modifiée)
+   ============================ */
+
+@media screen and (max-width: 768px) {
+    .imprimer-page {
+        padding: 10px 6px;
+    }
+
+    .titre-1 {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .titre-2 {
+        padding: 8px;
+        font-size: 11px;
+    }
+
+    .info-intervention {
+        padding: 10px;
+    }
+
+    .tableau-wrapper {
+        overflow-x: visible;
+    }
+
+    .tableau-interventions {
+        table-layout: fixed;
+        width: 100%;
+        font-size: 7.5px;
+        line-height: 1.25;
+    }
+
+    .tableau-interventions th,
+    .tableau-interventions td {
+        padding: 3px 2px;
+        max-width: none;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        hyphens: auto;
+    }
+
+    .tableau-interventions th {
+        font-size: 7px;
+    }
+
+    /* largeurs des 9 colonnes : les dates restent sur une ligne */
+    .tableau-principal th:nth-child(1), .tableau-principal td:nth-child(1),
+    .tableau-principal th:nth-child(4), .tableau-principal td:nth-child(4),
+    .tableau-principal th:nth-child(5), .tableau-principal td:nth-child(5) {
+        width: 12.5%;
+    }
+
+    .tableau-principal td:nth-child(1),
+    .tableau-principal td:nth-child(4),
+    .tableau-principal td:nth-child(5) {
+        font-size: 7px;
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .tableau-principal th:nth-child(2), .tableau-principal td:nth-child(2) { width: 12%; }
+    .tableau-principal th:nth-child(3), .tableau-principal td:nth-child(3) { width: 11%; }
+    .tableau-principal th:nth-child(6), .tableau-principal td:nth-child(6) { width: 10%; }
+    .tableau-principal th:nth-child(7), .tableau-principal td:nth-child(7) { width: 13%; }
+    .tableau-principal th:nth-child(8), .tableau-principal td:nth-child(8) { width: 9%; }
+    .tableau-principal th:nth-child(9), .tableau-principal td:nth-child(9) { width: 10%; }
+
+    .attachment-open-btn {
+        padding: 3px 4px;
+        border-radius: 4px;
+        font-size: 7px;
+        white-space: nowrap;
+    }
+
+    .signature-line {
+        gap: 8px;
+    }
+
+    .signature-label,
+    .signature-value {
+        font-size: 9px;
+    }
+
+    .manager-box {
+        min-width: 110px;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .tableau-interventions {
+        font-size: 6.5px;
+    }
+
+    .attachment-open-btn {
+        padding: 2px 2px;
+        font-size: 6px;
+    }
+}
+
+/* ============================
    PRINT STYLES
    ============================ */
 
