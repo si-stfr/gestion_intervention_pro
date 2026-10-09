@@ -278,7 +278,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `telephone`, `profil`, `created_
 (9, 'Admin', 'admin@local.test', '0000000000', 'ADMIN', '2026-09-10 04:00:00', '$2b$12$.euxLvbkMezjw93QAC/QO..smljRN45Zm2bzbwKJdMDCsLx6OoZuS', NULL),
 (10, 'Rayapin', 'Grayapin@ville-saintfrancois.fr', '0690489010', 'INTERVENANT', '2026-09-10 19:14:45', '$2b$12$0z.HgZEHjJ6HDhOXt3JtneKia2s1MkAsnBZEyRU5dSE0VnE7L4E1S', NULL),
 (11, 'Thierry', 'TRAGHOUNANDAN@ville-saintfrancois.fr', '7994665', 'MANAGER', '2026-10-05 13:45:50', '$2b$12$voVTeOe.0evxMrlcAs.npukgYh0paYAnh7rAy0bmg0/fVlUwNCBeK', NULL),
-(12, 'Manager Elec', 'ChElec@gmail.com', '775533', 'MANAGER', '2026-10-09 13:09:32', '$2b$12$Rrt1TjO9J2EgBqQnLWpq2OVTeYDY6a0d2D.za3nFutl9hntWv5BVW', NULL);
+(12, 'Manager Elec', 'ChElec@gmail.com', '775533', 'MANAGER', '2026-10-09 13:09:32', '$2b$12$Rrt1TjO9J2EgBqQnLWpq2OVTeYDY6a0d2D.za3nFutl9hntWv5BVW', NULL),
 (13, 'Technicien Elec', 'TechElec@gmail.com', '886611', 'TECHNICIEN', '2026-10-09 13:17:12', '$2b$12$3WjCDyfrBSYUPTGUJfMEKOKifX6y3RMOa.8PAFqt2sk8af87BbYQK', 12);
 
 --
